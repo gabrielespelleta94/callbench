@@ -47,6 +47,7 @@ gantt
 
 ## Últimas entradas de la bitácora
 
+- 2026-11-01 · **META** · Publicado en GitHub
 - 2026-11-01 · **META** · Preparación para publicar en GitHub
 - 2026-11-01 · **F4** · Primeros exámenes con pipecat.evals
 - 2026-11-01 · **F2** · Postgres portátil sin procesos huérfanos
@@ -54,4 +55,3 @@ gantt
 - 2026-11-01 · **F4** · Herramientas del agente: consultar huecos y reservar
 - 2026-11-01 · **META** · Decisión sobre pipecat.evals
 - 2026-10-31 · **F0** · Primera llamada real
-- 2026-10-31 · **META** · Bitácora y Gantt del proyecto

@@ -12,6 +12,13 @@ que no es de ninguna fase (estructura, documentación, herramientas).
 
 ---
 
+## 2026-11-01 · META · Publicado en GitHub
+
+- **Qué:** repositorio público https://github.com/gabrielespelleta94/callbench, rama `main`. Commit inicial con 44 ficheros (agente, API, migraciones, evals, tests y bitácora). README reescrito para GitHub: diagrama, decisión sobre `pipecat.evals`, estructura y comandos.
+- **Por qué:** enseñar el proyecto en la entrevista de Prosper.
+- **Pruebas:** 14 tests en verde antes de subir; revisión de secretos y rutas personales sin hallazgos; en GitHub, `.env` no existe (404).
+- **Siguiente:** reponer la semilla de la agenda antes de cada suite de evals; corregir el prompt de Ana con los fallos encontrados; cola (F3).
+
 ## 2026-11-01 · META · Preparación para publicar en GitHub
 
 - **Qué:** comentarios y docstrings del código traducidos al inglés (la bitácora sigue en español). `.gitignore` en inglés; `CLAUDE.md` y `.claude/` se quedan en local. Revisión de secretos y rutas personales en los ficheros publicables: ninguno. Extra `cli` de Pipecat instalado (trae `questionary`), con lo que el lanzador de evals ya no necesita un simulacro.
