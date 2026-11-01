@@ -1,0 +1,77 @@
+# Plan de CallBench: fuente única de fases, estado y fechas.
+# El Gantt (GANTT.md y GANTT.html) se genera desde aquí y desde BITACORA.md:
+#
+#     uv run python tools/bitacora.py
+#
+# estado: "pendiente" | "en_curso" | "hecho" | "bloqueado"
+# inicio/fin: fechas PLANIFICADAS (YYYY-MM-DD). Las reales salen solas de las
+# entradas de la bitácora (primera y última entrada con ese id de fase).
+
+[proyecto]
+nombre = "CallBench"
+objetivo = "Banco de regresión para agentes de voz Pipecat: llamadas sintéticas puntuadas y comparación entre versiones (éxito, latencia p50/p95, coste por llamada)."
+inicio = 2026-10-31
+
+[[fase]]
+id = "F0"
+nombre = "Agente de voz extremo a extremo en el navegador"
+estado = "hecho"
+inicio = 2026-10-31
+fin = 2026-11-01
+entregable = "Primera llamada real con la recepcionista por WebRTC"
+
+[[fase]]
+id = "F1"
+nombre = "API de la clínica con FastAPI (en memoria)"
+estado = "hecho"
+inicio = 2026-10-31
+fin = 2026-10-31
+entregable = "Endpoints de huecos y citas con tests (404, 409, 422)"
+
+[[fase]]
+id = "F2"
+nombre = "Esquema PostgreSQL y migraciones"
+estado = "hecho"
+inicio = 2026-11-01
+fin = 2026-11-01
+entregable = "API sobre Postgres, migraciones versionadas"
+
+[[fase]]
+id = "F3"
+nombre = "Cola de trabajos en Postgres (leases, reintentos, chaos test)"
+estado = "pendiente"
+inicio = 2026-11-05
+fin = 2026-11-09
+entregable = "Workers con FOR UPDATE SKIP LOCKED que sobreviven a caídas"
+
+[[fase]]
+id = "F4"
+nombre = "Tool calling contra la API y llamantes sintéticos"
+estado = "en_curso"
+inicio = 2026-11-01
+fin = 2026-11-16
+entregable = "El agente reserva de verdad; perfiles de llamante (interrumpe, callado, datos erróneos)"
+
+[[fase]]
+id = "F4b"
+nombre = "Asserts deterministas, juez LLM y gate de CI"
+estado = "pendiente"
+inicio = 2026-11-17
+fin = 2026-11-21
+entregable = "Cada llamada puntuada; CI falla si una versión empeora"
+
+[[fase]]
+id = "F5"
+nombre = "Latencia por etapa y comparación nube vs local"
+estado = "pendiente"
+inicio = 2026-11-22
+fin = 2026-11-26
+entregable = "p50/p95 por etapa (STT, LLM, TTS); Groq/Deepgram vs Whisper/Ollama/Piper"
+
+[[fase]]
+id = "F6"
+nombre = "Scorecard en React con diff entre versiones"
+estado = "pendiente"
+inicio = 2026-11-27
+fin = 2026-12-04
+entregable = "Dashboard que compara dos versiones del agente"

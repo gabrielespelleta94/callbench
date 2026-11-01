@@ -1,0 +1,19 @@
+# Scripted: greeting and request for a slot with Dr. Lopez
+name: saludo_y_huecos
+judge: !include juez_groq.yaml
+
+scenarios:
+  - name: huecos_dr_lopez
+    turns:
+      # No user turn: waits for the greeting Ana gives on connecting
+      - expect:
+          - event: response
+            eval: "greets the caller and mentions Sunrise Family Clinic"
+      - user: "Hi, this is Maria Garcia. I'd like an appointment with Doctor Lopez on November 3rd, please. Just tell me which times are free, don't book anything yet."
+        expect:
+          - event: function_call
+            calls:
+              - name: consultar_huecos
+          - event: response
+            eval: "offers at least one concrete appointment time with Dr. Lopez on November 3rd (for example nine o'clock or nine thirty in the morning)"
+            check_from: turn_start

@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CallBench Gantt</title>
+<style>
+  :root { --fondo:#fafaf9; --texto:#1c1917; --suave:#78716c; --borde:#e7e5e4; --acento:#0f766e; }
+  @media (prefers-color-scheme: dark) {
+    :root { --fondo:#1c1917; --texto:#f5f5f4; --suave:#a8a29e; --borde:#44403c; --acento:#2dd4bf; }
+  }
+  body { background:var(--fondo); color:var(--texto); font:15px/1.5 system-ui, sans-serif;
+         max-width:1100px; margin:0 auto; padding:24px 16px; }
+  h1 { margin:0 0 4px; } .suave { color:var(--suave); }
+  .kpis { display:flex; gap:24px; flex-wrap:wrap; margin:16px 0; }
+  .kpis b { display:block; font-size:24px; color:var(--acento); }
+  .scroll { overflow-x:auto; }
+  table { border-collapse:collapse; width:100%; font-size:14px; }
+  td, th { border-bottom:1px solid var(--borde); padding:6px 8px; text-align:left; white-space:nowrap; }
+</style></head><body>
+<h1>CallBench</h1>
+<p class="suave">Banco de regresión para agentes de voz Pipecat: llamadas sintéticas puntuadas y comparación entre versiones (éxito, latencia p50/p95, coste por llamada).</p>
+<div class="kpis">
+  <div><b>44 %</b><span class="suave">avance</span></div>
+  <div><b>F4 · Tool calling contra la API y llamantes sintéticos</b><span class="suave">fase actual</span></div>
+  <div><b>2026-11-01</b><span class="suave">actualizado</span></div>
+</div>
+<div class="scroll"><pre class="mermaid">gantt
+    title CallBench · plan vs real
+    dateFormat YYYY-MM-DD
+    axisFormat %d %b
+    todayMarker on
+    section F0
+    Agente de voz extremo a extremo en el navegador (plan) :F0p, 2026-10-31, 2026-11-02
+    Real :done, F0r, 2026-10-31, 2026-11-01
+    section F1
+    API de la clínica con FastAPI (en memoria) (plan) :F1p, 2026-10-31, 2026-11-01
+    Real :done, F1r, 2026-10-31, 2026-11-01
+    section F2
+    Esquema PostgreSQL y migraciones (plan) :F2p, 2026-11-01, 2026-11-02
+    Real :done, F2r, 2026-11-01, 2026-11-02
+    section F3
+    Cola de trabajos en Postgres (leases, reintentos, chaos test) (plan) :F3p, 2026-11-05, 2026-11-10
+    section F4
+    Tool calling contra la API y llamantes sintéticos (plan) :F4p, 2026-11-01, 2026-11-17
+    Real :active, F4r, 2026-11-01, 2026-11-02
+    section F4b
+    Asserts deterministas, juez LLM y gate de CI (plan) :F4bp, 2026-11-17, 2026-11-22
+    section F5
+    Latencia por etapa y comparación nube vs local (plan) :F5p, 2026-11-22, 2026-11-27
+    section F6
+    Scorecard en React con diff entre versiones (plan) :F6p, 2026-11-27, 2026-12-05</pre></div>
+<h2>Fases</h2>
+<div class="scroll"><table>
+<tr><th>Fase</th><th>Nombre</th><th>Estado</th><th>Plan</th><th>Real</th><th>Entradas</th><th>Aviso</th></tr>
+<tr><td>F0</td><td>Agente de voz extremo a extremo en el navegador</td><td>✅ hecho</td><td>2026-10-31 → 2026-11-01</td><td>2026-10-31 → 2026-10-31</td><td>2</td><td></td></tr><tr><td>F1</td><td>API de la clínica con FastAPI (en memoria)</td><td>✅ hecho</td><td>2026-10-31 → 2026-10-31</td><td>2026-10-31 → 2026-10-31</td><td>1</td><td></td></tr><tr><td>F2</td><td>Esquema PostgreSQL y migraciones</td><td>✅ hecho</td><td>2026-11-01 → 2026-11-01</td><td>2026-11-01 → 2026-11-01</td><td>2</td><td></td></tr><tr><td>F3</td><td>Cola de trabajos en Postgres (leases, reintentos, chaos test)</td><td>⏳ pendiente</td><td>2026-11-05 → 2026-11-09</td><td>—</td><td>0</td><td></td></tr><tr><td>F4</td><td>Tool calling contra la API y llamantes sintéticos</td><td>🔄 en_curso</td><td>2026-11-01 → 2026-11-16</td><td>2026-11-01 → 2026-11-01</td><td>2</td><td></td></tr><tr><td>F4b</td><td>Asserts deterministas, juez LLM y gate de CI</td><td>⏳ pendiente</td><td>2026-11-17 → 2026-11-21</td><td>—</td><td>0</td><td></td></tr><tr><td>F5</td><td>Latencia por etapa y comparación nube vs local</td><td>⏳ pendiente</td><td>2026-11-22 → 2026-11-26</td><td>—</td><td>0</td><td></td></tr><tr><td>F6</td><td>Scorecard en React con diff entre versiones</td><td>⏳ pendiente</td><td>2026-11-27 → 2026-12-04</td><td>—</td><td>0</td><td></td></tr>
+</table></div>
+<h2>Últimas entradas</h2>
+<ul><li><b>2026-11-01</b> · META · Preparación para publicar en GitHub</li><li><b>2026-11-01</b> · F4 · Primeros exámenes con pipecat.evals</li><li><b>2026-11-01</b> · F2 · Postgres portátil sin procesos huérfanos</li><li><b>2026-11-01</b> · F2 · API sobre PostgreSQL portátil con migraciones</li><li><b>2026-11-01</b> · F4 · Herramientas del agente: consultar huecos y reservar</li><li><b>2026-11-01</b> · META · Decisión sobre pipecat.evals</li><li><b>2026-10-31</b> · F0 · Primera llamada real</li><li><b>2026-10-31</b> · META · Bitácora y Gantt del proyecto</li></ul>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.esm.min.mjs";
+  const oscuro = matchMedia("(prefers-color-scheme: dark)").matches;
+  mermaid.initialize({ startOnLoad: true, theme: oscuro ? "dark" : "default" });
+</script>
+</body></html>

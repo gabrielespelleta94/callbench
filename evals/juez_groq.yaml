@@ -1,0 +1,5 @@
+# Judge in text modality (no TTS/STT), using Groq instead of the default Ollama
+modality: text
+eval:
+  factory: evals.servicios_groq.juez
+  model: openai/gpt-oss-120b

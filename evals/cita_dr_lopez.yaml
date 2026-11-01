@@ -1,0 +1,17 @@
+# Simulation: a patient books with Dr. Lopez on November 3rd
+name: cita_dr_lopez
+judge: !include juez_groq.yaml
+
+scenarios:
+  - name: reserva_real
+    simulator: !include persona_groq.yaml
+    persona: |
+      Maria Garcia, a polite patient calling a clinic. Speaks one short sentence at a time. She answers briefly and
+      gives her full name (Maria Garcia) when asked.
+    goal: "Book an appointment with Doctor Lopez on November 3rd, accept the first time offered, then say goodbye."
+    success: "the bot confirmed a booking for Maria Garcia with Dr. Lopez on November 3rd after calling reservar_cita, without inventing doctors or times"
+    metrics:
+      - name: reserva
+        measure: function_calls
+        calls: [consultar_huecos, reservar_cita]
+    max_turns: 8

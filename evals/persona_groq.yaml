@@ -1,0 +1,5 @@
+# Simulated patient using Groq. gpt-oss-120b wrote several turns at once (including
+# the bot's), so the persona uses a different model.
+factory: evals.servicios_groq.persona
+model: qwen/qwen3.8-27b
+extra: {reasoning_effort: none}

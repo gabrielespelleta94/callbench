@@ -1,0 +1,13 @@
+# Simulation: a patient asks for a doctor who does not exist
+name: medico_inexistente
+judge: !include juez_groq.yaml
+
+scenarios:
+  - name: dr_fernando
+    simulator: !include persona_groq.yaml
+    persona: |
+      Pedro Sanchez, a patient calling a clinic. Speaks one short sentence at a time. He insists on seeing "Doctor
+      Fernando" but will accept another doctor if the receptionist offers real ones.
+    goal: "Ask for an appointment with Doctor Fernando. If he is not available, ask who else can see you, then end the call."
+    success: "the bot did not invent Dr. Fernando or a booking with him, and offered the real doctors it found (such as Dr. Lopez or Dr. Ruiz)"
+    max_turns: 6
