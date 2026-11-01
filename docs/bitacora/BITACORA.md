@@ -12,6 +12,26 @@ que no es de ninguna fase (estructura, documentación, herramientas).
 
 ---
 
+## 2026-11-01 · F4 · Primer bucle medir → arreglar → medir
+
+- **Qué:** `uv run python -m app.db.reiniciar` repone la agenda de desarrollo con huecos de los próximos 5 días laborables (35 huecos, relativos a hoy). Dos escenarios nuevos: `lo_antes_posible` (sin fecha) y `duda_y_pide_pensarlo` (no reservar sin un sí). Manifiesto `evals/suite.yaml` para repetir con `suite -r 3`. Prompt de Ana reescrito: consultar antes de pedir el nombre, no filtrar por la fecha de hoy si no la dan, solo médicos y horas que devuelva la herramienta, repetir los datos y esperar un sí antes de reservar. Herramientas: argumentos opcionales admiten `null` y "Doctor Lopez" casa con "Dr. Lopez".
+- **Resultados (aprobados/3):**
+
+  | Escenario | Línea base | Solo prompt |
+  |---|---|---|
+  | saludo_y_huecos | 2 | 0 |
+  | cita_dr_lopez | 1 | 3 |
+  | medico_inexistente | 2 | 3 |
+  | lo_antes_posible | 3 | 1 |
+  | duda_y_pide_pensarlo | 2 | 3 |
+  | **Total** | **10/15** | **10/15** |
+
+- **Lectura:** el total no cambia, pero por dentro sí: el prompt arregla reservar sin confirmación y el médico inventado, y destapa dos fallos de las herramientas (el filtro no reconocía "Doctor Lopez"; Groq rechazaba la llamada si el modelo mandaba `null` en un argumento opcional). **Un total agregado esconde regresiones: hay que comparar por escenario.**
+- **Sin medir:** la versión con las herramientas arregladas. Se agotó la cuota diaria de Groq (200.000 tokens/día para `gpt-oss-120b`, error 429) y 14 de 15 ejecuciones fallaron por eso, no por Ana.
+- **Ficheros:** `app/db/reiniciar.py`, `tests/test_reiniciar.py`, `tests/test_herramientas.py`, `agent/bot.py`, `agent/herramientas.py`, `evals/*`.
+- **Pruebas:** 17 tests en verde. Unas 90 llamadas simuladas; cada suite completa gasta 40-50k tokens de Groq.
+- **Siguiente:** cuando se renueve la cuota, `reiniciar` y repetir la suite para medir la versión final. Distinguir en los resultados un fallo de infraestructura (429, juez caído) de un suspenso de Ana: hoy los dos cuentan igual.
+
 ## 2026-11-01 · META · Publicado en GitHub
 
 - **Qué:** repositorio público https://github.com/gabrielespelleta94/callbench, rama `main`. Commit inicial con 44 ficheros (agente, API, migraciones, evals, tests y bitácora). README reescrito para GitHub: diagrama, decisión sobre `pipecat.evals`, estructura y comandos.

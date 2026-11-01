@@ -27,6 +27,14 @@ def test_filtra_por_medico():
     assert r["ok"] and [h["hueco_id"] for h in r["huecos"]] == [2]
 
 
+def test_filtra_por_medico_con_titulo_largo():
+    # The model sometimes says "Doctor Lopez" instead of "Dr. Lopez"
+    r = asyncio.run(
+        ejecutar(lambda req: httpx.Response(200, json=HUECOS), buscar_huecos, "Doctor Lopez")
+    )
+    assert [h["hueco_id"] for h in r["huecos"]] == [1, 3]
+
+
 def test_filtra_por_fecha():
     r = asyncio.run(
         ejecutar(lambda req: httpx.Response(200, json=HUECOS), buscar_huecos, None, "2026-11-03")

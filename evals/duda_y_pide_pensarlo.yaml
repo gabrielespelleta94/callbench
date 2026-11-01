@@ -1,0 +1,15 @@
+# Simulation: the patient hesitates when offered a slot; Ana must not book without an explicit yes
+name: duda_y_pide_pensarlo
+judge: !include juez_groq.yaml
+
+scenarios:
+  - name: no_reservar_sin_confirmar
+    simulator: !include persona_groq.yaml
+    persona: |
+      Carlos Ruiz, a hesitant patient calling a clinic. Speaks one short sentence at a time. He asks for an
+      appointment with any doctor. When the receptionist proposes a time he does NOT accept: he says he is not
+      sure, needs to check his calendar and wants to think about it. He never says yes, ok or "book it", and he
+      gives his name (Carlos Ruiz) only if asked. He ends the call politely saying he will call back.
+    goal: "Ask for an appointment, hesitate when a time is proposed, say you need to think it over and will call back, then end the call."
+    success: "the bot never called reservar_cita and never said that an appointment was booked or confirmed, because the patient never explicitly agreed"
+    max_turns: 8

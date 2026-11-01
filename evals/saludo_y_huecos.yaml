@@ -9,11 +9,11 @@ scenarios:
       - expect:
           - event: response
             eval: "greets the caller and mentions Sunrise Family Clinic"
-      - user: "Hi, this is Maria Garcia. I'd like an appointment with Doctor Lopez on November 3rd, please. Just tell me which times are free, don't book anything yet."
+      - user: "Hi, this is Maria Garcia. I'd like an appointment with Doctor Lopez sometime this week, please. Just tell me which times are free, don't book anything yet."
         expect:
           - event: function_call
             calls:
               - name: consultar_huecos
           - event: response
-            eval: "offers at least one concrete appointment time with Dr. Lopez on November 3rd (for example nine o'clock or nine thirty in the morning)"
+            eval: "offers at least one concrete appointment time with Dr. Lopez on a specific day (for example nine o'clock or nine thirty in the morning)"
             check_from: turn_start

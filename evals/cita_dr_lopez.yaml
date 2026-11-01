@@ -1,4 +1,4 @@
-# Simulation: a patient books with Dr. Lopez on November 3rd
+# Simulation: a patient books with Dr. Lopez some day this week (dates are relative to the agenda reset)
 name: cita_dr_lopez
 judge: !include juez_groq.yaml
 
@@ -8,8 +8,8 @@ scenarios:
     persona: |
       Maria Garcia, a polite patient calling a clinic. Speaks one short sentence at a time. She answers briefly and
       gives her full name (Maria Garcia) when asked.
-    goal: "Book an appointment with Doctor Lopez on November 3rd, accept the first time offered, then say goodbye."
-    success: "the bot confirmed a booking for Maria Garcia with Dr. Lopez on November 3rd after calling reservar_cita, without inventing doctors or times"
+    goal: "Book an appointment with Doctor Lopez sometime this week (any day is fine). Do not name a date yourself. Accept the first time offered and confirm clearly (say yes) when the receptionist repeats the details, then say goodbye."
+    success: "the bot confirmed a booking for Maria Garcia with Dr. Lopez, for a day and time that consultar_huecos returned, after calling reservar_cita, without inventing doctors or times"
     metrics:
       - name: reserva
         measure: function_calls

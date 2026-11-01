@@ -66,7 +66,7 @@ llamantes sintéticos (F4) ──> cola de trabajos en Postgres (F3) ───�
 
 - **Fase actual:** F4 en curso. Ana consulta y reserva contra la API, y ya hay tres exámenes de `pipecat.evals` (dos aprobados; el tercero suspende porque no quedaban huecos).
 - **Hecho:** F0 (primera llamada, ~0,9 s de voz a voz), F1 y F2 (API sobre Postgres portátil con migraciones). 12 tests en verde. Decidido montar CallBench sobre `pipecat.evals` (D-07).
-- **Siguiente paso:** reponer la semilla antes de cada suite; corregir el prompt con los fallos encontrados; cola (F3).
+- **Siguiente paso:** medir la versión final de Ana cuando se renueve la cuota de Groq (`reiniciar` + `suite -r 3`); separar fallos de infraestructura de suspensos; cola (F3).
 - **Bloqueos:** ninguno. Repo público: https://github.com/gabrielespelleta94/callbench
 
 ## Convenciones

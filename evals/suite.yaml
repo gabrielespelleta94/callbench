@@ -1,0 +1,13 @@
+# Repeatable measurement: `uv run python evals/lanzar.py suite evals/suite.yaml -r 3 -n <name>`
+# Spawns one fresh bot per run (ports from base_port). Reset the agenda first:
+#   uv run python -m app.db.reiniciar
+concurrency: 1  # >1 caused 'judge call failed' (Groq rate limits)
+base_port: 7961
+runs_dir: runs
+bots_dir: ..
+scenarios_dir: .
+spawn: "{python} {bot} --port {port}"
+suite:
+  - bot: agent/bot.py
+    name: ana
+    scenarios: [saludo_y_huecos, cita_dr_lopez, medico_inexistente, lo_antes_posible, duda_y_pide_pensarlo]

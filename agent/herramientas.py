@@ -21,8 +21,17 @@ ESQUEMA_CONSULTAR = FunctionSchema(
     name="consultar_huecos",
     description="List the free appointment slots. Optionally filter by doctor and/or by date.",
     properties={
-        "medico": {"type": "string", "description": "Doctor name, e.g. 'Dr. Lopez'. Optional."},
-        "fecha": {"type": "string", "description": "Date as YYYY-MM-DD. Optional."},
+        # "null" is allowed: the model often sends null for optional arguments and Groq
+        # rejects the whole call if the schema says plain string
+        "medico": {
+            "type": ["string", "null"],
+            "description": "Doctor name, e.g. 'Dr. Lopez'. Leave it out to see all doctors.",
+        },
+        "fecha": {
+            "type": ["string", "null"],
+            "description": "Date as YYYY-MM-DD. Only when the caller names a specific day; "
+            "otherwise leave it out.",
+        },
     },
     required=[],
 )
@@ -31,7 +40,8 @@ ESQUEMA_RESERVAR = FunctionSchema(
     name="reservar_cita",
     description=(
         "Book an appointment in a slot returned by consultar_huecos. "
-        "Needs the patient's full name."
+        "Needs the patient's full name. Only call it after the caller explicitly agreed "
+        "to the doctor, day and time."
     ),
     properties={
         "hueco_id": {"type": "integer", "description": "Slot id from consultar_huecos."},
@@ -63,6 +73,12 @@ def _dia_legible(inicio: str) -> str:
         return inicio
 
 
+def _normalizar_medico(nombre: str) -> str:
+    """Lower-case and treat 'Doctor Lopez' like 'Dr. Lopez' when matching doctor names."""
+    nombre = nombre.strip().lower().replace("doctor ", "dr. ").replace("dr ", "dr. ")
+    return nombre
+
+
 async def buscar_huecos(
     cliente: httpx.AsyncClient, medico: str | None = None, fecha: str | None = None
 ) -> dict:
@@ -76,7 +92,8 @@ async def buscar_huecos(
         return AGENDA_NO_DISPONIBLE
 
     if medico:
-        huecos = [h for h in huecos if medico.strip().lower() in h["medico"].lower()]
+        buscado = _normalizar_medico(medico)
+        huecos = [h for h in huecos if buscado in _normalizar_medico(h["medico"])]
     if fecha:
         huecos = [h for h in huecos if h["inicio"].startswith(fecha.strip())]
     huecos = sorted(huecos, key=lambda h: h["inicio"])[:MAX_HUECOS]

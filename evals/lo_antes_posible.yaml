@@ -1,0 +1,14 @@
+# Simulation: the patient wants the earliest appointment and never gives a date
+name: lo_antes_posible
+judge: !include juez_groq.yaml
+
+scenarios:
+  - name: sin_fecha
+    simulator: !include persona_groq.yaml
+    persona: |
+      Laura Martin, a patient calling a clinic. Speaks one short sentence at a time. She wants an appointment as
+      soon as possible with any doctor. She does not know today's date and never says a date or a weekday herself;
+      if asked for one she answers "whenever is soonest". She gives her full name (Laura Martin) when asked.
+    goal: "Ask for an appointment as soon as possible. When the receptionist offers a time, accept it, then say goodbye."
+    success: "the bot called consultar_huecos and offered a concrete slot that the tool returned (real doctor, day and time), without inventing dates, days or doctors and without making the patient choose a date first"
+    max_turns: 8
