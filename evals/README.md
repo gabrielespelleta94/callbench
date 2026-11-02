@@ -40,3 +40,13 @@ The simulations really book, so reset the development agenda before each run
   Run `uv run python -m app.db.reiniciar` before repeating.
 - Groq free tier has a daily token cap (200k for gpt-oss-120b): about 4 full suites of 15 runs.
 - Each run consumes Groq tokens (bot, judge and patient).
+
+## Round report (agent failures vs infrastructure)
+
+    uv run python evals/informe.py <name or path of the round>
+
+Reads `evals/runs/<name>/results.jsonl` and classifies each attempt as passed, failed
+(agent) or infra (judge call failed, Groq rejecting a tool call, dead bot process, clinic
+API down detected as `agenda_no_disponible` in the attempt log, or any other error).
+The pass rate is computed over valid attempts (passed + failed). Exit code: 0 all passed,
+1 some agent failure, 2 no agent failures but infra errors (inconclusive round).

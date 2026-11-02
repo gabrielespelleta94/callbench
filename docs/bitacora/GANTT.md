@@ -4,7 +4,7 @@
 
 **Objetivo:** Banco de regresión para agentes de voz Pipecat: llamadas sintéticas puntuadas y comparación entre versiones (éxito, latencia p50/p95, coste por llamada).
 
-**Actualizado:** 2026-11-01 · **Avance:** 44 % · **Fase actual:** F4 Tool calling contra la API y llamantes sintéticos
+**Actualizado:** 2026-11-02 · **Avance:** 44 % · **Fase actual:** F4 Tool calling contra la API y llamantes sintéticos
 
 ```mermaid
 gantt
@@ -25,7 +25,7 @@ gantt
     Cola de trabajos en Postgres (leases, reintentos, chaos test) (plan) :F3p, 2026-11-05, 2026-11-10
     section F4
     Tool calling contra la API y llamantes sintéticos (plan) :F4p, 2026-11-01, 2026-11-17
-    Real :active, F4r, 2026-11-01, 2026-11-02
+    Real :active, F4r, 2026-11-01, 2026-11-03
     section F4b
     Asserts deterministas, juez LLM y gate de CI (plan) :F4bp, 2026-11-17, 2026-11-22
     section F5
@@ -40,18 +40,18 @@ gantt
 | F1 | API de la clínica con FastAPI (en memoria) | ✅ hecho | 2026-10-31 → 2026-10-31 | 2026-10-31 → 2026-10-31 | 1 |  |
 | F2 | Esquema PostgreSQL y migraciones | ✅ hecho | 2026-11-01 → 2026-11-01 | 2026-11-01 → 2026-11-01 | 2 |  |
 | F3 | Cola de trabajos en Postgres (leases, reintentos, chaos test) | ⏳ pendiente | 2026-11-05 → 2026-11-09 | — | 0 |  |
-| F4 | Tool calling contra la API y llamantes sintéticos | 🔄 en_curso | 2026-11-01 → 2026-11-16 | 2026-11-01 → 2026-11-01 | 3 |  |
+| F4 | Tool calling contra la API y llamantes sintéticos | 🔄 en_curso | 2026-11-01 → 2026-11-16 | 2026-11-01 → 2026-11-02 | 5 |  |
 | F4b | Asserts deterministas, juez LLM y gate de CI | ⏳ pendiente | 2026-11-17 → 2026-11-21 | — | 0 |  |
 | F5 | Latencia por etapa y comparación nube vs local | ⏳ pendiente | 2026-11-22 → 2026-11-26 | — | 0 |  |
 | F6 | Scorecard en React con diff entre versiones | ⏳ pendiente | 2026-11-27 → 2026-12-04 | — | 0 |  |
 
 ## Últimas entradas de la bitácora
 
+- 2026-11-02 · **F4** · Informe que separa suspensos de fallos de infraestructura
+- 2026-11-02 · **F4** · Versión final medida: 13/15, y los 2 fallos no son de Ana
 - 2026-11-01 · **F4** · Primer bucle medir → arreglar → medir
 - 2026-11-01 · **META** · Publicado en GitHub
 - 2026-11-01 · **META** · Preparación para publicar en GitHub
 - 2026-11-01 · **F4** · Primeros exámenes con pipecat.evals
 - 2026-11-01 · **F2** · Postgres portátil sin procesos huérfanos
 - 2026-11-01 · **F2** · API sobre PostgreSQL portátil con migraciones
-- 2026-11-01 · **F4** · Herramientas del agente: consultar huecos y reservar
-- 2026-11-01 · **META** · Decisión sobre pipecat.evals

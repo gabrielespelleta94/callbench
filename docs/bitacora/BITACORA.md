@@ -12,6 +12,36 @@ que no es de ninguna fase (estructura, documentación, herramientas).
 
 ---
 
+## 2026-11-02 · F4 · Informe que separa suspensos de fallos de infraestructura
+
+- **Qué:** `uv run python evals/informe.py <vuelta>` clasifica cada intento como aprobado, suspenso o infra (juez sin respuesta, Groq rechaza la llamada a herramienta, proceso del bot muerto, API caída detectada por `agenda_no_disponible` en el log, cualquier otro error). La tasa se calcula sobre intentos válidos. Código de salida: 0 todo aprobado, 1 algún suspenso, 2 sin suspensos pero con infra (no concluyente). Avisa si hay intentos repetidos por reutilizar el nombre.
+- **Por qué:** se perdieron tres vueltas por causas ajenas a Ana que contaban como suspensos. El código de salida deja preparada la puerta de CI de F4b.
+- **Limitación:** la caída de la API solo se ve en el log del intento, y reutilizar el nombre los sobrescribe. En `final`, tres intentos de la vuelta sin API salen como suspenso porque su log ya es de una vuelta posterior; de ahí el aviso. La cuota agotada y la API caída se detectan después de gastar la vuelta: falta comprobarlas antes de lanzar.
+- **Ficheros:** `evals/informe.py`, `tests/test_informe.py`, `evals/README.md`.
+- **Siguiente:** comprobación previa de API, huecos y cuota; cola (F3).
+- **Pruebas:** `final-lunes` da 13 aprobados, 0 suspensos, 2 infra, salida 2. 30 tests en verde.
+
+## 2026-11-02 · F4 · Versión final medida: 13/15, y los 2 fallos no son de Ana
+
+- **Qué:** medida la versión con prompt y herramientas corregidos (`suite -r 3 -n final-lunes`, API levantada y agenda reiniciada).
+- **Resultados (aprobados/3):**
+
+  | Escenario | Línea base | Solo prompt | Prompt + herramientas |
+  |---|---|---|---|
+  | saludo_y_huecos | 2 | 0 | 3 |
+  | cita_dr_lopez | 1 | 3 | 2 |
+  | medico_inexistente | 2 | 3 | 3 |
+  | lo_antes_posible | 3 | 1 | 2 |
+  | duda_y_pide_pensarlo | 2 | 3 | 3 |
+  | **Total** | **10/15** | **10/15** | **13/15** |
+
+- **Los 2 suspensos:** son `harness_error` del lado del examen, no de Ana: Groq rechaza una llamada a herramienta mal formada (`target_text`, inexistente, y `Failed to call a function`). Lo más probable es que venga de la persona simulada (qwen), que es quien cuelga con `end_call`; falta confirmarlo. En `cita_dr_lopez` #2 Ana ya había confirmado la reserva; en `lo_antes_posible` #2 la llamada se cortó antes de reservar. Ana aprueba 13 de los 13 intentos que terminaron bien.
+- **Por qué:** cierra el bucle medir → arreglar → medir. Antes de esta vuelta se perdieron tres por causas ajenas a Ana: API sin levantar (`agenda_no_disponible`), cuota diaria de Groq agotada (`judge call failed`) y PC suspendido durante la noche (`ProcessLookupError`, intentos de casi 14 h).
+- **Observado:** reutilizar el nombre con `-n` acumula las vueltas en el mismo `results.jsonl`, así que cada vuelta necesita un nombre nuevo. Cada suite reserva unos 7 huecos: conviene reiniciar la agenda antes de cada vuelta. En `cita_dr_lopez` #2 un turno de Ana junta dos frases ("Which would you prefer?I'll book you for Dr. Lopez..."), adelantándose al paciente; sin efecto en la nota, pero el juez no lo penaliza.
+- **Ficheros:** solo bitácora y contexto; sin cambios de código.
+- **Siguiente:** contar los errores de infraestructura aparte de los suspensos y comprobar API, huecos y cuota antes de lanzar; cola (F3). Con 3 repeticiones por escenario la diferencia es orientativa.
+- **Pruebas:** `suite -r 3` en `evals/runs/final-lunes`, 13/15.
+
 ## 2026-11-01 · F4 · Primer bucle medir → arreglar → medir
 
 - **Qué:** `uv run python -m app.db.reiniciar` repone la agenda de desarrollo con huecos de los próximos 5 días laborables (35 huecos, relativos a hoy). Dos escenarios nuevos: `lo_antes_posible` (sin fecha) y `duda_y_pide_pensarlo` (no reservar sin un sí). Manifiesto `evals/suite.yaml` para repetir con `suite -r 3`. Prompt de Ana reescrito: consultar antes de pedir el nombre, no filtrar por la fecha de hoy si no la dan, solo médicos y horas que devuelva la herramienta, repetir los datos y esperar un sí antes de reservar. Herramientas: argumentos opcionales admiten `null` y "Doctor Lopez" casa con "Dr. Lopez".
