@@ -50,3 +50,15 @@ Reads `evals/runs/<name>/results.jsonl` and classifies each attempt as passed, f
 API down detected as `agenda_no_disponible` in the attempt log, or any other error).
 The pass rate is computed over valid attempts (passed + failed). Exit code: 0 all passed,
 1 some agent failure, 2 no agent failures but infra errors (inconclusive round).
+
+## Queue and stored results (bench/)
+
+Rounds stored in Postgres, run by one or two workers (API running first):
+
+    uv run alembic upgrade head
+    uv run python -m bench.encolar -n my-round -e v1 -r 3 --reiniciar
+    uv run python -m bench.worker --puerto 7970 --api-url http://127.0.0.1:8000
+
+Each job (scenario x attempt) gets a fresh bot on the worker's port; results land in the
+`llamadas` table, with logs under `evals/runs/<round>/`. Only infrastructure failures are
+retried (backoff, at most 3 executions); a second worker needs another `--puerto`.

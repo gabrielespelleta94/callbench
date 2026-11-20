@@ -4,7 +4,7 @@
 
 **Objetivo:** Banco de regresión para agentes de voz Pipecat: llamadas sintéticas puntuadas y comparación entre versiones (éxito, latencia p50/p95, coste por llamada).
 
-**Actualizado:** 2026-11-20 · **Avance:** 44 % · **Fase actual:** F4 Tool calling contra la API y llamantes sintéticos
+**Actualizado:** 2026-11-20 · **Avance:** 56 % · **Fase actual:** F4 Tool calling contra la API y llamantes sintéticos
 
 ```mermaid
 gantt
@@ -22,7 +22,8 @@ gantt
     Esquema PostgreSQL y migraciones (plan) :F2p, 2026-11-01, 2026-11-02
     Real :done, F2r, 2026-11-01, 2026-11-02
     section F3
-    Cola de trabajos en Postgres (leases, reintentos, chaos test) (plan) :F3p, 2026-11-05, 2026-11-10
+    Cola de trabajos en Postgres (leases, reintentos, chaos test) (plan) :F3p, 2026-11-20, 2026-11-22
+    Real :done, F3r, 2026-11-20, 2026-11-21
     section F4
     Tool calling contra la API y llamantes sintéticos (plan) :F4p, 2026-11-01, 2026-11-17
     Real :active, F4r, 2026-11-01, 2026-11-21
@@ -39,7 +40,7 @@ gantt
 | F0 | Agente de voz extremo a extremo en el navegador | ✅ hecho | 2026-10-31 → 2026-11-01 | 2026-10-31 → 2026-10-31 | 2 |  |
 | F1 | API de la clínica con FastAPI (en memoria) | ✅ hecho | 2026-10-31 → 2026-10-31 | 2026-10-31 → 2026-10-31 | 1 |  |
 | F2 | Esquema PostgreSQL y migraciones | ✅ hecho | 2026-11-01 → 2026-11-01 | 2026-11-01 → 2026-11-01 | 2 |  |
-| F3 | Cola de trabajos en Postgres (leases, reintentos, chaos test) | ⏳ pendiente | 2026-11-05 → 2026-11-09 | — | 0 | retraso 11 d |
+| F3 | Cola de trabajos en Postgres (leases, reintentos, chaos test) | ✅ hecho | 2026-11-20 → 2026-11-21 | 2026-11-20 → 2026-11-20 | 1 |  |
 | F4 | Tool calling contra la API y llamantes sintéticos | 🔄 en_curso | 2026-11-01 → 2026-11-16 | 2026-11-01 → 2026-11-20 | 5 | retraso 4 d |
 | F4b | Asserts deterministas, juez LLM y gate de CI | ⏳ pendiente | 2026-11-17 → 2026-11-21 | — | 0 |  |
 | F5 | Latencia por etapa y comparación nube vs local | ⏳ pendiente | 2026-11-22 → 2026-11-26 | — | 0 |  |
@@ -47,6 +48,7 @@ gantt
 
 ## Últimas entradas de la bitácora
 
+- 2026-11-20 · **F3** · Resultados en Postgres y cola de trabajos con leases y reintentos
 - 2026-11-20 · **META** · Plan de mejora para el fin de semana y guía del proyecto
 - 2026-11-02 · **F4** · Informe que separa suspensos de fallos de infraestructura
 - 2026-11-02 · **F4** · Versión final medida: 13/15, y los 2 fallos no son de Ana
@@ -54,4 +56,3 @@ gantt
 - 2026-11-01 · **META** · Publicado en GitHub
 - 2026-11-01 · **META** · Preparación para publicar en GitHub
 - 2026-11-01 · **F4** · Primeros exámenes con pipecat.evals
-- 2026-11-01 · **F2** · Postgres portátil sin procesos huérfanos
