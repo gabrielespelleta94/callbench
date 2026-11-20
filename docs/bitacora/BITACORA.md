@@ -12,6 +12,16 @@ que no es de ninguna fase (estructura, documentación, herramientas).
 
 ---
 
+## 2026-11-20 · F4b · Asserts deterministas junto al juez LLM
+
+- **Qué:** `evals/asserts.py` evalúa cada llamada con cinco asserts (`reserva_correcta`, `sin_reserva`, `confirmacion_antes_de_reservar`, `no_inventa`, `orden_herramientas`) a partir de `conversation.json`, de los resultados de las herramientas que deja el log del bot y, si existe, de una foto de `huecos`/`citas` (`uv run python evals/asserts.py foto <vuelta>` → `estado_bd.json`). Qué asserts aplican a cada escenario va en `evals/asserts.toml`. `evals/informe.py` da el veredicto combinado (aprueba solo si pasan juez y asserts; infra sigue siendo infra), una tabla juez vs asserts y la línea "el juez aprobó N llamadas que los asserts suspendieron". Códigos de salida 0/1/2 sin cambios; `--solo-juez` reproduce el informe de antes.
+- **Por qué:** el juez aprobó con P(yes)=0,98 una reserva hecha sin repetir los datos ni esperar un sí. Un criterio determinista y explicable no depende del humor del juez.
+- **Hallazgos:** sobre las vueltas ya guardadas, el juez aprobó llamadas que los asserts suspenden: `final-lunes` 4 de 13, `nuevo` 3, `base` 3, `base-c1` 8. Casos claros: `base` #1 (el del hallazgo: pide el nombre antes de consultar y reserva sin repetir nada) y `nuevo` `medico_inexistente` #3 (reserva a nombre de "Maria Garcia" cuando llama Pedro, sin confirmar, y el juez aprueba). La regla de confirmación es estricta a propósito: si Ana repite médico y hora, pide el nombre y reserva sin un sí después, suspende (pasa mucho en `final-lunes`). Si se quiere aceptar el "sí" dado antes de repetir, es un cambio de una línea en `confirmacion_antes_de_reservar`.
+- **Límites:** las comprobaciones de texto (horas, médicos, "sí") son patrones en inglés, simples y explicables, no exhaustivos. La foto de BD es de toda la vuelta: la cita de cada llamada se busca por el id que devolvió `reservar_cita`; `sin_reserva` suspende si hay cualquier cita del paciente del escenario. Los escenarios de guion (`saludo_y_huecos`) no dejan `conversation.json`: sus asserts salen n/a.
+- **Ficheros:** `evals/asserts.py`, `evals/asserts.toml`, `evals/informe.py`, `evals/README.md`, `tests/test_asserts.py`, `tests/fixtures/vuelta_ejemplo/` (6 llamadas reales recortadas: transcripción y última línea de contexto del log, sin rutas).
+- **Siguiente:** sacar la foto de BD al final de cada vuelta (en `lanzar.py` o en el worker de la cola) y re-ejecutar la línea base con asserts. Gate de CI (B3).
+- **Pruebas:** `uv run pytest`: 67 en verde (37 nuevos, uno contra el Postgres de test). Sin llamadas al bot ni a Groq.
+
 ## 2026-11-20 · META · Plan de mejora para el fin de semana y guía del proyecto
 
 - **Qué:** `docs/plan-mejora.md` (fases A-E con horas, orden sábado/domingo, riesgos, recortes y lo que hace falta de Gabriel) y `docs/guia-callbench.md` (pipeline, herramientas, evals y decisiones, en 20 minutos). Comprobado el estado real: tests, API, claves y dos escenarios contra el bot en vivo.

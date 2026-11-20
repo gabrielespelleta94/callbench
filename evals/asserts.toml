@@ -1,0 +1,37 @@
+# Deterministic asserts per scenario (read by evals/asserts.py, used by evals/informe.py).
+# Keys under [escenarios] are "<scenario file>/<scenario name>", as in results.jsonl.
+# A scenario without its own entry uses [defecto].
+#
+# Available asserts:
+#   reserva_correcta                 booked for `paciente` with `medico` in a slot consultar_huecos returned
+#                                    (and, with estado_bd.json, the appointment is in the database)
+#   sin_reserva                      reservar_cita never called; no appointment for `paciente` in the database
+#   confirmacion_antes_de_reservar   before each reservar_cita, Ana's last turn repeats doctor + time
+#                                    and the patient answers yes
+#   no_inventa                       every doctor and time Ana says comes from the closed list / the tools
+#   orden_herramientas               consultar_huecos before asking the name and before reservar_cita
+
+[defecto]
+asserts = ["confirmacion_antes_de_reservar", "no_inventa", "orden_herramientas"]
+# Closed list of real doctors (besides the ones in estado_bd.json and the tool results)
+medicos = ["Dr. Lopez", "Dr. Ruiz"]
+
+[escenarios."cita_dr_lopez/reserva_real"]
+asserts = ["reserva_correcta", "confirmacion_antes_de_reservar", "no_inventa", "orden_herramientas"]
+paciente = "Maria Garcia"
+medico = "Dr. Lopez"
+
+[escenarios."duda_y_pide_pensarlo/no_reservar_sin_confirmar"]
+asserts = ["sin_reserva", "no_inventa", "orden_herramientas"]
+paciente = "Carlos Ruiz"
+
+[escenarios."saludo_y_huecos/huecos_dr_lopez"]
+# Script that says "don't book anything yet"
+asserts = ["sin_reserva", "no_inventa", "orden_herramientas"]
+paciente = "Maria Garcia"
+
+[escenarios."medico_inexistente/dr_fernando"]
+asserts = ["confirmacion_antes_de_reservar", "no_inventa", "orden_herramientas"]
+
+[escenarios."lo_antes_posible/sin_fecha"]
+asserts = ["confirmacion_antes_de_reservar", "no_inventa", "orden_herramientas"]

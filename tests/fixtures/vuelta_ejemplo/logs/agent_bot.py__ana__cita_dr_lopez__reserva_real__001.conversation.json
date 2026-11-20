@@ -1,0 +1,55 @@
+[
+  {
+    "role": "assistant",
+    "content": "Good morning, Sunrise Family Clinic. How may I help you today?"
+  },
+  {
+    "role": "user",
+    "content": "Good morning, I'd like to book an appointment with Doctor Lopez for sometime this week, please."
+  },
+  {
+    "role": "assistant",
+    "content": "May I have your full name, please?"
+  },
+  {
+    "role": "user",
+    "content": "My name is Maria Garcia."
+  },
+  {
+    "role": "tool_call",
+    "name": "consultar_huecos",
+    "arguments": {
+      "medico": "Dr. Lopez"
+    },
+    "cancelled": false
+  },
+  {
+    "role": "tool_call",
+    "name": "reservar_cita",
+    "arguments": {
+      "hueco_id": 4,
+      "paciente": "Maria Garcia"
+    },
+    "cancelled": false
+  },
+  {
+    "role": "assistant",
+    "content": "How about Monday at ten thirty in the morning?Great, I\u2019ll book that for you."
+  },
+  {
+    "role": "user",
+    "content": "Yes, that works for me, thank you."
+  },
+  {
+    "role": "assistant",
+    "content": "Your appointment with Dr. Lopez is confirmed for Monday at ten thirty in the morning."
+  },
+  {
+    "role": "user",
+    "content": "Yes, that's correct, thank you. Goodbye."
+  },
+  {
+    "role": "assistant",
+    "content": "You\u2019re welcome, Maria. Have a great day."
+  }
+]

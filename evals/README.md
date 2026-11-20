@@ -50,3 +50,16 @@ Reads `evals/runs/<name>/results.jsonl` and classifies each attempt as passed, f
 API down detected as `agenda_no_disponible` in the attempt log, or any other error).
 The pass rate is computed over valid attempts (passed + failed). Exit code: 0 all passed,
 1 some agent failure, 2 no agent failures but infra errors (inconclusive round).
+
+## Deterministic asserts (on top of the judge)
+
+    uv run python evals/asserts.py foto <round>     # after the round: snapshot huecos/citas
+    uv run python evals/informe.py <round>          # judge + asserts
+    uv run python evals/informe.py <round> --solo-juez
+
+`evals/asserts.py` re-grades every call from its transcript (`conversation.json`), the tool
+results in the bot log and, if present, `estado_bd.json`: correct booking in the database,
+no booking without a repeated doctor + time and a "yes", no invented doctors or times, and
+`consultar_huecos` before asking the name and before booking. Which asserts apply to each
+scenario is set in `evals/asserts.toml`. A call passes only if the judge and the asserts
+pass; the report also counts the calls the judge passed and the asserts failed.

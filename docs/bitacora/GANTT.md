@@ -4,7 +4,7 @@
 
 **Objetivo:** Banco de regresión para agentes de voz Pipecat: llamadas sintéticas puntuadas y comparación entre versiones (éxito, latencia p50/p95, coste por llamada).
 
-**Actualizado:** 2026-11-20 · **Avance:** 44 % · **Fase actual:** F4 Tool calling contra la API y llamantes sintéticos
+**Actualizado:** 2026-11-20 · **Avance:** 50 % · **Fase actual:** F4 Tool calling contra la API y llamantes sintéticos
 
 ```mermaid
 gantt
@@ -28,6 +28,7 @@ gantt
     Real :active, F4r, 2026-11-01, 2026-11-21
     section F4b
     Asserts deterministas, juez LLM y gate de CI (plan) :F4bp, 2026-11-17, 2026-11-22
+    Real :active, F4br, 2026-11-20, 2026-11-21
     section F5
     Latencia por etapa y comparación nube vs local (plan) :F5p, 2026-11-22, 2026-11-27
     section F6
@@ -41,12 +42,13 @@ gantt
 | F2 | Esquema PostgreSQL y migraciones | ✅ hecho | 2026-11-01 → 2026-11-01 | 2026-11-01 → 2026-11-01 | 2 |  |
 | F3 | Cola de trabajos en Postgres (leases, reintentos, chaos test) | ⏳ pendiente | 2026-11-05 → 2026-11-09 | — | 0 | retraso 11 d |
 | F4 | Tool calling contra la API y llamantes sintéticos | 🔄 en_curso | 2026-11-01 → 2026-11-16 | 2026-11-01 → 2026-11-20 | 5 | retraso 4 d |
-| F4b | Asserts deterministas, juez LLM y gate de CI | ⏳ pendiente | 2026-11-17 → 2026-11-21 | — | 0 |  |
+| F4b | Asserts deterministas, juez LLM y gate de CI | 🔄 en_curso | 2026-11-17 → 2026-11-21 | 2026-11-20 → 2026-11-20 | 1 |  |
 | F5 | Latencia por etapa y comparación nube vs local | ⏳ pendiente | 2026-11-22 → 2026-11-26 | — | 0 |  |
 | F6 | Scorecard en React con diff entre versiones | ⏳ pendiente | 2026-11-27 → 2026-12-04 | — | 0 |  |
 
 ## Últimas entradas de la bitácora
 
+- 2026-11-20 · **F4b** · Asserts deterministas junto al juez LLM
 - 2026-11-20 · **META** · Plan de mejora para el fin de semana y guía del proyecto
 - 2026-11-02 · **F4** · Informe que separa suspensos de fallos de infraestructura
 - 2026-11-02 · **F4** · Versión final medida: 13/15, y los 2 fallos no son de Ana
@@ -54,4 +56,3 @@ gantt
 - 2026-11-01 · **META** · Publicado en GitHub
 - 2026-11-01 · **META** · Preparación para publicar en GitHub
 - 2026-11-01 · **F4** · Primeros exámenes con pipecat.evals
-- 2026-11-01 · **F2** · Postgres portátil sin procesos huérfanos
