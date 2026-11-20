@@ -12,6 +12,16 @@ que no es de ninguna fase (estructura, documentación, herramientas).
 
 ---
 
+## 2026-11-21 · F4 · Línea base con asserts: 14/18 válidas y el juez aprobó las 4 que fallan
+
+- **Qué:** dos rondas de la versión actual de Ana (`base-2026-11-20`, `suite -r 3`, y `base-2026-11-20-b`, `-r 5`), calificadas con juez + asserts por `evals/informe.py`.
+- **Resultados:** 40 intentos: 18 válidos y 22 de infraestructura. De los válidos, **14 aprueban (78 %, Wilson 95 %: 55-91 %)**. Los 4 suspensos son todos del mismo assert, `confirmacion_antes_de_reservar` (reserva sin repetir médico y hora o sin un "sí"), y **el juez aprobó los 4**. En `medico_inexistente` #2 (ronda b) Ana dijo "Dr. Fernando has no openings tomorrow", como si existiera.
+- **Infraestructura:** 17 intentos de la ronda b murieron con `harness worker exited 3221225794` (0xC0000142, no se pudo iniciar el proceso) cuando terminó la sesión que lanzaba la suite; el resto, procesos del harness caídos y un rechazo de Groq. Además, una vez el LLM de Ana pidió una herramienta inexistente (`file`) y Groq la rechazó: el informe lo cuenta como infra, pero es un fallo del modelo.
+- **Por qué:** primera medida con asserts; confirma que el juez solo no basta y que hace falta la cola con reintentos para no perder la mitad de los intentos.
+- **Ficheros:** solo bitácora (vueltas en `evals/runs/`, fuera de git).
+- **Siguiente:** arreglar la confirmación antes de reservar (prompt y guarda en la herramienta) y volver a medir por la cola (`bench`), con N≥10 por escenario.
+- **Pruebas:** `informe.py` sobre las dos rondas.
+
 ## 2026-11-20 · META · Unidas en main las ramas de cola, asserts, métricas+CI y guía
 
 - **Qué:** merge en `main` de `claude/docs-como-se-hizo`, `claude/f3-cola`, `claude/f4b-asserts` y `claude/f5-metricas-ci`. Conflictos solo en bitácora, Gantt y `evals/README.md` (se conservan las secciones de las dos ramas). `evals/informe.py` importa `asserts` como script o como `evals.asserts`, porque el worker de la cola lo importa como paquete.
