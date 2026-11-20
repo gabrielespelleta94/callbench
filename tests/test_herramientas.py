@@ -67,3 +67,112 @@ def test_api_caida():
 
     assert asyncio.run(ejecutar(caida, buscar_huecos))["error"] == "agenda_no_disponible"
     assert asyncio.run(ejecutar(caida, crear_cita, 1, "Ana Gil"))["error"] == "agenda_no_disponible"
+
+
+# ---------------------------------------------------------------- confirmation guard
+
+from agent import herramientas
+from agent.confirmacion import ERROR, check_confirmation
+
+HUECOS_TOOL = {
+    "role": "tool",
+    "tool_call_id": "c1",
+    "content": '{"ok": true, "huecos": [{"hueco_id": 8, "medico": "Dr. Lopez", '
+    '"inicio": "2026-11-24T09:30:00Z", "cuando": "Tuesday November 24 at 09:30"}]}',
+}
+LEIDA = "Dr. Lopez on Tuesday at nine thirty for Maria Garcia. Shall I book it?"
+
+
+def conversacion(ana: str = LEIDA, paciente: str = "Yes, that's right.") -> list[dict]:
+    return [
+        {"role": "system", "content": "You are Ana."},
+        {"role": "user", "content": "I need to see Dr. Lopez."},
+        {"role": "assistant", "tool_calls": [{"id": "c1", "function": {"name": "consultar_huecos"}}]},
+        HUECOS_TOOL,
+        {"role": "assistant", "content": ana},
+        {"role": "user", "content": paciente},
+        {"role": "assistant", "content": "Great, booking it now."},  # same response as the call
+    ]
+
+
+def args(**extra) -> dict:
+    base = {"hueco_id": 8, "paciente": "Maria Garcia", "confirmado_por_paciente": True,
+            "frase_del_paciente": "Yes, that's right"}
+    return {**base, **extra}
+
+
+def test_guarda_deja_reservar_con_si_tras_leer_los_datos():
+    assert check_confirmation(args(), conversacion()) is None
+
+
+def test_guarda_exige_la_marca_de_confirmacion():
+    r = check_confirmation(args(confirmado_por_paciente=False), conversacion())
+    assert r["ok"] is False and r["error"] == ERROR
+
+
+def test_guarda_rechaza_una_frase_que_el_paciente_no_dijo():
+    # The model claims a yes that is not in the caller's last turn
+    r = check_confirmation(args(frase_del_paciente="Yes, book it"), conversacion())
+    assert r["error"] == ERROR and "did not say" in r["mensaje"]
+
+
+def test_guarda_rechaza_si_el_paciente_duda():
+    r = check_confirmation(
+        args(frase_del_paciente="ok"), conversacion(paciente="Ok, but wait, let me think about it.")
+    )
+    assert r["error"] == ERROR and "clear yes" in r["mensaje"]
+
+
+def test_guarda_rechaza_si_ana_no_repite_medico_y_hora():
+    r = check_confirmation(args(), conversacion(ana="Can I have your full name, please?"))
+    assert r["error"] == ERROR and "the doctor and the time" in r["mensaje"]
+
+
+def test_guarda_no_vale_un_si_anterior_a_la_lectura():
+    # "Yes" to the slot earlier, then the name; the last turn is the name, not a yes
+    r = check_confirmation(
+        args(frase_del_paciente="Maria Garcia"),
+        conversacion(ana="And your full name?", paciente="Maria Garcia."),
+    )
+    assert r["error"] == ERROR
+
+
+def test_guarda_acepta_hora_en_cifras():
+    ana = "Dr. Lopez, Tuesday at 9:30, for Maria Garcia. Is that correct?"
+    assert check_confirmation(args(), conversacion(ana=ana)) is None
+
+
+class _Contexto:
+    def __init__(self, mensajes):
+        self.mensajes = mensajes
+
+    def get_messages(self):
+        return self.mensajes
+
+
+class _Params:
+    def __init__(self, arguments, mensajes):
+        self.arguments = arguments
+        self.context = _Contexto(mensajes)
+        self.resultado = None
+
+    async def result_callback(self, resultado):
+        self.resultado = resultado
+
+
+def test_handler_no_llama_a_la_api_si_la_guarda_rechaza(monkeypatch):
+    llamadas = []
+    monkeypatch.setattr(herramientas, "crear_cita", lambda *a, **k: llamadas.append(a))
+    p = _Params(args(confirmado_por_paciente=False), conversacion())
+    asyncio.run(herramientas.handler_reservar_cita(p))
+    assert p.resultado["error"] == ERROR and llamadas == []
+
+
+def test_handler_reserva_si_la_guarda_deja(monkeypatch):
+    async def crear(cliente, hueco_id, paciente, motivo=None):
+        return {"ok": True, "cita": {"id": 1, "hueco_id": hueco_id, "paciente": paciente}}
+
+    monkeypatch.setattr(herramientas, "crear_cita", crear)
+    p = _Params(args(), conversacion())
+    asyncio.run(herramientas.handler_reservar_cita(p))
+    assert p.resultado["ok"] is True and p.resultado["cita"]["hueco_id"] == 8

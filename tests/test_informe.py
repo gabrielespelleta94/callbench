@@ -8,7 +8,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "evals"))
 
-from informe import agregar, clasificar, codigo_salida, intentos_repetidos  # noqa: E402
+from informe import agregar, clasificar, codigo_salida, intentos_repetidos
 
 
 def fila(**campos):
@@ -83,3 +83,69 @@ def test_detecta_nombre_de_vuelta_reutilizado():
     uno = {"escenario": "a", "intento": 1}
     assert intentos_repetidos([uno, {"escenario": "a", "intento": 2}]) is False
     assert intentos_repetidos([uno, dict(uno)]) is True
+
+
+# ---------------------------------------------------------------- nonexistent tool
+
+ERROR_FILE = (
+    "Error during completion: tool call validation failed: "
+    "attempted to call tool 'file' which was not in request.tools"
+)
+
+
+def test_herramienta_inexistente_de_ana_es_suspenso():
+    # The refusal is in the bot log: Ana's own LLM asked for the tool
+    log = f"GroqLLMService#0 error: {ERROR_FILE}"
+    veredicto, causa = clasificar(fila(error=ERROR_FILE, ended_by="error"), log)
+    assert veredicto == "suspenso" and "Ana" in causa and "file" in causa
+
+
+def test_herramienta_inexistente_de_ana_sin_error_en_la_fila():
+    # The harness may not report it; the bot log alone is enough
+    log = f"... {ERROR_FILE} ..."
+    assert clasificar(fila(), log)[0] == "suspenso"
+
+
+def test_herramienta_inexistente_de_la_persona_es_infra():
+    # Only the harness saw it (as in base-2026-11-20-b #2): the simulated patient's LLM
+    veredicto, causa = clasificar(fila(error=ERROR_FILE, ended_by="error"), "bot log sin error")
+    assert veredicto == "infra" and "persona" in causa and "file" in causa
+
+
+# ---------------------------------------------------------------- bench round layout
+
+import json
+
+from informe import analizar, filas_de_vuelta
+
+
+def _trabajo(raiz: Path, nombre: str, filas: list[dict] | None, bot_log: str = "") -> Path:
+    d = raiz / nombre
+    (d / "logs").mkdir(parents=True)
+    (d / "bot.log").write_text(bot_log, encoding="utf-8")
+    if filas is not None:
+        lineas = []
+        for f in filas:
+            f = {**f, "artifacts": {"log": str(d / "logs" / "x__y.log")}}
+            lineas.append(json.dumps(f))
+        (d / "results.jsonl").write_text("\n".join(lineas), encoding="utf-8")
+    return d
+
+
+def test_vuelta_de_la_cola_toma_la_ultima_ejecucion(tmp_path):
+    _trabajo(tmp_path, "a__001__e1", [fila(scenario="a/x", error="judge call failed")])
+    _trabajo(tmp_path, "a__001__e2", [fila(scenario="a/x", passed=True)])
+    _trabajo(tmp_path, "a__002__e1", None)  # harness died, nothing written
+    filas, reintentos = filas_de_vuelta(tmp_path)
+    assert reintentos == 1
+    assert [f.get("passed") for f, _ in filas] == [True, None]
+    assert filas[1][0]["error"] == "sin results.jsonl"
+
+
+def test_vuelta_de_la_cola_lee_bot_log_del_trabajo(tmp_path):
+    # API down: the marker is only in <job>/bot.log, not next to the transcript
+    _trabajo(
+        tmp_path, "a__001__e1", [fila(scenario="a/x")], bot_log='{"error": "agenda_no_disponible"}'
+    )
+    detalle, _ = analizar(tmp_path, con_asserts=False)
+    assert detalle[0]["veredicto"] == "infra" and "API" in detalle[0]["causa"]

@@ -9,6 +9,7 @@ Exit code: 0 all passed, 1 some agent failure, 2 no failures but infra errors.
 """
 
 import json
+import re
 import sys
 from collections import OrderedDict
 from pathlib import Path
@@ -21,6 +22,25 @@ except ModuleNotFoundError:  # imported as evals.informe (bench worker)
 RAIZ_RUNS = Path(__file__).resolve().parent / "runs"
 MARCA_AGENDA = '"error": "agenda_no_disponible"'
 TRUNCADO = 80
+# Groq refuses a completion that calls a tool the request did not offer. The bot's LLM
+# (Ana) and the simulated patient both run on Groq: the bot log tells which one it was.
+HERRAMIENTA_INEXISTENTE = re.compile(r"attempted to call tool '([^']+)' which was not in request\.tools")
+TRABAJO = re.compile(r"^(?P<escenario>.+)__(?P<intento>\d{3})__e(?P<ejecucion>\d+)$")
+
+
+def herramienta_inexistente(fila: dict, texto_log: str | None) -> tuple[str, str] | None:
+    """(who, tool) if a completion asked for a tool that does not exist.
+
+    who is "ana" when the refusal is in the bot log (the agent's own LLM asked for it) and
+    "persona" when only the harness saw it (the simulated patient's LLM asked for it).
+    """
+    m = HERRAMIENTA_INEXISTENTE.search(texto_log or "")
+    if m:
+        return "ana", m[1]
+    m = HERRAMIENTA_INEXISTENTE.search(fila.get("error") or "")
+    if m:
+        return "persona", m[1]
+    return None
 
 
 def causa_infra(fila: dict) -> str | None:
@@ -53,6 +73,11 @@ def _motivo_suspenso(fila: dict) -> str | None:
 def clasificar(fila: dict, texto_log: str | None = None) -> tuple[str, str | None]:
     if fila.get("passed"):
         return "aprobado", None
+    inexistente = herramienta_inexistente(fila, texto_log)
+    if inexistente and inexistente[0] == "ana":
+        return "suspenso", f"Ana pidio una herramienta inexistente: {inexistente[1]}"
+    if inexistente:
+        return "infra", f"la persona simulada pidio una herramienta inexistente: {inexistente[1]}"
     causa = causa_infra(fila)
     if causa:
         return "infra", causa
@@ -80,16 +105,40 @@ def leer_filas(ruta: Path) -> list[dict]:
 
 
 def _leer_log(fila: dict, dir_vuelta: Path) -> str | None:
-    ruta = (fila.get("artifacts") or {}).get("log")
-    if not ruta:
+    """The bot log of a row (next to the transcript, or `<job dir>/bot.log` in the queue)."""
+    ruta = asr.ruta_log(fila, dir_vuelta)
+    try:
+        return ruta.read_text(encoding="utf-8", errors="replace") if ruta else None
+    except OSError:
         return None
-    nombre = Path(str(ruta).replace("\\", "/")).name
-    for candidato in (Path(ruta), dir_vuelta / "logs" / nombre):
-        try:
-            return candidato.read_text(encoding="utf-8", errors="replace")
-        except OSError:
-            continue
-    return None
+
+
+def filas_de_vuelta(dir_vuelta: Path) -> tuple[list[tuple[dict, Path]], int]:
+    """(row, directory of its files) for every attempt of a round, and the retries.
+
+    A `suite` round has one results.jsonl. A bench round has one directory per job
+    execution (`<scenario>__<attempt>__e<execution>`): only the last execution of each job
+    counts; earlier ones were infrastructure failures the queue retried.
+    """
+    if (dir_vuelta / "results.jsonl").exists():
+        return [(f, dir_vuelta) for f in leer_filas(dir_vuelta / "results.jsonl")], 0
+    ultimos: dict[tuple[str, int], tuple[int, Path]] = {}
+    for d in dir_vuelta.iterdir() if dir_vuelta.is_dir() else []:
+        m = TRABAJO.match(d.name)
+        if d.is_dir() and m:
+            clave, ejecucion = (m["escenario"], int(m["intento"])), int(m["ejecucion"])
+            if clave not in ultimos or ejecucion > ultimos[clave][0]:
+                ultimos[clave] = (ejecucion, d)
+    filas, reintentos = [], 0
+    for (escenario, intento), (ejecucion, d) in sorted(ultimos.items()):
+        reintentos += ejecucion - 1
+        if (d / "results.jsonl").exists():
+            filas += [(f, d) for f in leer_filas(d / "results.jsonl")]
+        else:  # the harness died before writing a result; the queue stored it as infra
+            filas.append(
+                ({"scenario": escenario, "attempt": intento, "error": "sin results.jsonl"}, d)
+            )
+    return filas, reintentos
 
 
 def dir_de_vuelta(arg: str) -> Path:
@@ -110,14 +159,13 @@ def analizar(dir_vuelta: Path, con_asserts: bool = True) -> tuple[list[dict], di
     config = asr.cargar_config() if con_asserts else None
     bd = asr.leer_foto_bd(dir_vuelta) if con_asserts else None
     detalle = []
-    for fila in leer_filas(dir_vuelta / "results.jsonl"):
-        juez, causa = clasificar(fila)
-        if juez == "suspenso":
-            juez, causa = clasificar(fila, _leer_log(fila, dir_vuelta))
+    filas, reintentos = filas_de_vuelta(dir_vuelta)
+    for fila, dir_fila in filas:
+        juez, causa = clasificar(fila, _leer_log(fila, dir_fila))
         escenario = fila.get("scenario", "?")
         lista = []
         if con_asserts:
-            lista = asr.evaluar(asr.cargar_llamada(fila, dir_vuelta), bd, config, escenario)
+            lista = asr.evaluar(asr.cargar_llamada(fila, dir_fila), bd, config, escenario)
         v_asserts = asr.veredicto(lista) if con_asserts else "n/a"
         veredicto = combinar(juez, v_asserts)
         if veredicto == "suspenso" and juez == "aprobado":
@@ -137,6 +185,7 @@ def analizar(dir_vuelta: Path, con_asserts: bool = True) -> tuple[list[dict], di
     resumen = agregar([(d["escenario"], d["veredicto"]) for d in detalle])
     resumen["juez_vs_asserts"] = juez_vs_asserts(detalle)
     resumen["con_asserts"] = con_asserts
+    resumen["reintentos"] = reintentos
     return detalle, resumen
 
 
@@ -190,6 +239,8 @@ def formatear(detalle: list[dict], resumen: dict) -> str:
     tasa = resumen["tasa"]
     texto_tasa = "n/a (0 intentos validos)" if tasa is None else f"{tasa:.0%} de {validos}"
     lineas += ["", f"Tasa de aprobado sobre intentos validos: {texto_tasa}"]
+    if resumen.get("reintentos"):
+        lineas.append(f"Ejecuciones de infraestructura reintentadas por la cola: {resumen['reintentos']}")
     fallos = [d for d in detalle if d["veredicto"] != "aprobado"]
     if fallos:
         lineas += ["", "Fallos:"]

@@ -9,10 +9,11 @@ from datetime import datetime
 
 import httpx
 from loguru import logger
-
 from pipecat.adapters.llm.schemas.function_schema import FunctionSchema
 from pipecat.adapters.llm.schemas.tools_schema import ToolsSchema
 from pipecat.services.llm_service import FunctionCallParams
+
+from agent.confirmacion import check_confirmation
 
 TIMEOUT_SEGUNDOS = 5.0
 MAX_HUECOS = 6  # few slots: the LLM reads them out loud
@@ -40,15 +41,26 @@ ESQUEMA_RESERVAR = FunctionSchema(
     name="reservar_cita",
     description=(
         "Book an appointment in a slot returned by consultar_huecos. "
-        "Needs the patient's full name. Only call it after the caller explicitly agreed "
-        "to the doctor, day and time."
+        "Needs the patient's full name. Only call it after you read the doctor, day, time "
+        "and name back to the caller and they said yes in their last turn; otherwise it "
+        "refuses with error confirmacion_requerida."
     ),
     properties={
         "hueco_id": {"type": "integer", "description": "Slot id from consultar_huecos."},
         "paciente": {"type": "string", "description": "Patient's full name."},
         "motivo": {"type": "string", "description": "Reason for the visit. Optional."},
+        "confirmado_por_paciente": {
+            "type": "boolean",
+            "description": "True only if the caller said yes to this exact booking "
+            "in their last turn.",
+        },
+        "frase_del_paciente": {
+            "type": "string",
+            "description": "The caller's exact words agreeing to the booking, copied from "
+            "their last turn, e.g. 'Yes, that's right'.",
+        },
     },
-    required=["hueco_id", "paciente"],
+    required=["hueco_id", "paciente", "confirmado_por_paciente", "frase_del_paciente"],
 )
 
 AGENDA_NO_DISPONIBLE = {
@@ -157,9 +169,21 @@ async def handler_consultar_huecos(params: FunctionCallParams):
     await params.result_callback(resultado)
 
 
+def _mensajes(params: FunctionCallParams) -> list[dict]:
+    try:
+        return list(params.context.get_messages())
+    except Exception:  # no context: the guard then refuses (no caller turn to check)
+        return []
+
+
 async def handler_reservar_cita(params: FunctionCallParams):
     try:
         args = params.arguments
+        rechazo = check_confirmation(args, _mensajes(params))
+        if rechazo:
+            logger.info(f"reservar_cita rechazada por la guarda: {rechazo['mensaje']}")
+            await params.result_callback(rechazo)
+            return
         async with _cliente() as cliente:
             resultado = await crear_cita(
                 cliente, int(args["hueco_id"]), str(args["paciente"]), args.get("motivo")

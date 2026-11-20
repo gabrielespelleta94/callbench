@@ -28,6 +28,7 @@ RAIZ_EVALS = Path(__file__).resolve().parent
 CONFIG = RAIZ_EVALS / "asserts.toml"
 FOTO_BD = "estado_bd.json"
 MARCA_CONTEXTO = "Generating LLM response "
+RECHAZO_GUARDA = "confirmacion_requerida"  # agent/confirmacion.py ERROR
 ANSI = re.compile(r"\x1b\[[0-9;]*m")
 
 
@@ -92,23 +93,36 @@ def unir(mensajes: list[dict], resultados: list[tuple[str, dict | None]]) -> lis
     return unidos
 
 
-def ruta_log(fila: dict, dir_vuelta: Path) -> Path | None:
+def _candidatos(fila: dict, dir_vuelta: Path) -> list[Path]:
     ruta = (fila.get("artifacts") or {}).get("log")
     if not ruta:
-        return None
+        return []
     nombre = Path(str(ruta).replace("\\", "/")).name
-    for candidato in (Path(ruta), dir_vuelta / "logs" / nombre):
-        if candidato.exists():
-            return candidato
+    return [Path(ruta), dir_vuelta / "logs" / nombre]
+
+
+def ruta_log(fila: dict, dir_vuelta: Path) -> Path | None:
+    """The bot log of a row. `suite` writes it next to the transcript; a bench.worker job
+    keeps it in `<job dir>/bot.log` (the bot is started by the worker, not by pipecat)."""
+    candidatos = _candidatos(fila, dir_vuelta)
+    if candidatos:
+        candidatos.append(dir_vuelta / "bot.log")
+    return next((c for c in candidatos if c.exists()), None)
+
+
+def ruta_conversacion(fila: dict, dir_vuelta: Path) -> Path | None:
+    for log in _candidatos(fila, dir_vuelta):
+        conversacion = log.with_name(log.name.removesuffix(".log") + ".conversation.json")
+        if conversacion.exists():
+            return conversacion
     return None
 
 
 def cargar_llamada(fila: dict, dir_vuelta: Path) -> Llamada | None:
     """Transcript + tool results of one results.jsonl row; None if the files are missing."""
-    log = ruta_log(fila, dir_vuelta)
-    if log is None:
+    log, conversacion = ruta_log(fila, dir_vuelta), ruta_conversacion(fila, dir_vuelta)
+    if log is None or conversacion is None:
         return None
-    conversacion = log.with_name(log.name.removesuffix(".log") + ".conversation.json")
     try:
         mensajes = json.loads(conversacion.read_text(encoding="utf-8"))
     except (OSError, ValueError):
@@ -347,9 +361,14 @@ def sin_reserva(llamada: Llamada, cfg: dict, bd: dict | None) -> Assert:
 
 def confirmacion_antes_de_reservar(llamada: Llamada, cfg: dict, bd: dict | None) -> Assert:
     nombre = "confirmacion_antes_de_reservar"
-    reservas = _llamadas(llamada, "reservar_cita")
+    # A call refused by the agent's confirmation guard booked nothing: it is not a booking
+    reservas = [
+        i
+        for i in _llamadas(llamada, "reservar_cita")
+        if (llamada.mensajes[i].get("resultado") or {}).get("error") != RECHAZO_GUARDA
+    ]
     if not reservas:
-        return Assert(nombre, True, "no hubo reservar_cita")
+        return Assert(nombre, True, "no hubo reservar_cita (o la guarda las paro todas)")
     for i in reservas:
         previos = llamada.mensajes[:i]
         idx_ana = next(
