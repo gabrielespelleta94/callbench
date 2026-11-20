@@ -20,6 +20,15 @@ que no es de ninguna fase (estructura, documentación, herramientas).
 - **Ficheros:** `docs/como-se-hizo.md`, `docs/bitacora/BITACORA.md`, Gantt regenerado.
 - **Pruebas:** solo documentación; números de línea y cifras contrastados con el código y la bitácora. Los ejercicios no se han ejecutado.
 
+## 2026-11-20 · F3 · Resultados en Postgres y cola de trabajos con leases y reintentos
+
+- **Qué:** migración `0003` con `versiones` (etiqueta, commit, config STT/LLM/TTS en JSONB), `vueltas`, `trabajos` (estado, intentos, `disponible_en`, `lease_hasta`, worker, error) y `llamadas` (veredicto, causa, juez y asserts en columnas separadas, transcripción, métricas, el registro completo de pipecat). Paquete `bench/`: `bench.encolar` crea la vuelta (escenario × intentos, primero todos los intentos 1), `bench.worker` toma trabajos con `FOR UPDATE SKIP LOCKED` y lease renovado por un hilo, arranca un bot nuevo en su puerto, ejecuta el escenario y guarda el resultado clasificado con `evals/informe.py`. Solo se reintenta la infraestructura (backoff 30 s, 60 s; máximo 3 ejecuciones); los suspensos de Ana son definitivos. Un worker que perdió su lease no escribe nada.
+- **Por qué:** guardar cada llamada con su versión para comparar vueltas (B3, B5) y que una caída o un 429 no cuenten como suspenso ni maten la vuelta.
+- **Decisión:** `pipecat eval run` no deja `results.jsonl` (solo `suite`, que arranca sus propios bots). `bench.ejecutar` ejecuta el mismo código que `run` y añade el registro que escribe `suite`, así `informe.py` lo clasifica sin cambios (D-16).
+- **Ficheros:** `migrations/versions/0003_cola_y_resultados.py`, `app/db/modelos.py`, `bench/` (`cola.py`, `encolar.py`, `worker.py`, `ejecutar.py`), `pyproject.toml`, `tests/test_cola.py`, `tests/worker_que_muere.py`, `evals/README.md`.
+- **Pruebas:** `uv run pytest`: 54 en verde (24 nuevos, sin Groq: SKIP LOCKED con 6 hilos, leases, backoff, lease perdido, clasificación). Chaos test: un proceso worker real toma un trabajo, se mata con `kill`, el lease caduca y otro worker lo termina (ejecución 2). Contra el bot real (API en 8001, bot en 7970): `saludo_y_huecos` aprobado en 26 s y `cita_dr_lopez` aprobado (juez P=0,97) en 72 s, guardados en `llamadas`.
+- **Siguiente:** B2 rellena `aprobado_asserts` y `asserts`; B4 rellena `metricas`. Medir 1 vs 2 workers en una vuelta real.
+
 ## 2026-11-20 · META · Plan de mejora para el fin de semana y guía del proyecto
 
 - **Qué:** `docs/plan-mejora.md` (fases A-E con horas, orden sábado/domingo, riesgos, recortes y lo que hace falta de Gabriel) y `docs/guia-callbench.md` (pipeline, herramientas, evals y decisiones, en 20 minutos). Comprobado el estado real: tests, API, claves y dos escenarios contra el bot en vivo.

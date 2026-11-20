@@ -39,9 +39,9 @@ entregable = "API sobre Postgres, migraciones versionadas"
 [[fase]]
 id = "F3"
 nombre = "Cola de trabajos en Postgres (leases, reintentos, chaos test)"
-estado = "pendiente"
-inicio = 2026-11-05
-fin = 2026-11-09
+estado = "hecho"
+inicio = 2026-11-20
+fin = 2026-11-21
 entregable = "Workers con FOR UPDATE SKIP LOCKED que sobreviven a caídas"
 
 [[fase]]
