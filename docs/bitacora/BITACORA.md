@@ -12,6 +12,14 @@ que no es de ninguna fase (estructura, documentación, herramientas).
 
 ---
 
+## 2026-11-20 · META · Documento "Cómo se hizo" para preparar la entrevista
+
+- **Qué:** `docs/como-se-hizo.md`: cronología por fases con lo que falló y cómo se arregló, recorrido comentado de `agent/bot.py`, `agent/herramientas.py`, la reserva atómica de `app/main.py` y `evals/informe.py`, receta para escribir un escenario, 7 ejercicios de 15 minutos y 20 preguntas de entrevista con respuesta corta.
+- **Por qué:** poder explicar y defender cada decisión en la entrevista de ElevenLabs sin inventar cifras; enlaza `guia-callbench.md` en lugar de repetirla.
+- **Hallazgo:** el historial de git empieza con un commit inicial único; la cronología real de F0-F2 solo está en la bitácora. La bitácora no detalla el arreglo del "Yeah" que cortó a Ana.
+- **Ficheros:** `docs/como-se-hizo.md`, `docs/bitacora/BITACORA.md`, Gantt regenerado.
+- **Pruebas:** solo documentación; números de línea y cifras contrastados con el código y la bitácora. Los ejercicios no se han ejecutado.
+
 ## 2026-11-20 · META · Plan de mejora para el fin de semana y guía del proyecto
 
 - **Qué:** `docs/plan-mejora.md` (fases A-E con horas, orden sábado/domingo, riesgos, recortes y lo que hace falta de Gabriel) y `docs/guia-callbench.md` (pipeline, herramientas, evals y decisiones, en 20 minutos). Comprobado el estado real: tests, API, claves y dos escenarios contra el bot en vivo.

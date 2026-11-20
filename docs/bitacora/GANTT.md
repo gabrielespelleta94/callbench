@@ -47,6 +47,7 @@ gantt
 
 ## Últimas entradas de la bitácora
 
+- 2026-11-20 · **META** · Documento "Cómo se hizo" para preparar la entrevista
 - 2026-11-20 · **META** · Plan de mejora para el fin de semana y guía del proyecto
 - 2026-11-02 · **F4** · Informe que separa suspensos de fallos de infraestructura
 - 2026-11-02 · **F4** · Versión final medida: 13/15, y los 2 fallos no son de Ana
@@ -54,4 +55,3 @@ gantt
 - 2026-11-01 · **META** · Publicado en GitHub
 - 2026-11-01 · **META** · Preparación para publicar en GitHub
 - 2026-11-01 · **F4** · Primeros exámenes con pipecat.evals
-- 2026-11-01 · **F2** · Postgres portátil sin procesos huérfanos
