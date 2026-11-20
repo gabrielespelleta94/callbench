@@ -12,6 +12,15 @@ que no es de ninguna fase (estructura, documentación, herramientas).
 
 ---
 
+## 2026-11-20 · META · Unidas en main las ramas de cola, asserts, métricas+CI y guía
+
+- **Qué:** merge en `main` de `claude/docs-como-se-hizo`, `claude/f3-cola`, `claude/f4b-asserts` y `claude/f5-metricas-ci`. Conflictos solo en bitácora, Gantt y `evals/README.md` (se conservan las secciones de las dos ramas). `evals/informe.py` importa `asserts` como script o como `evals.asserts`, porque el worker de la cola lo importa como paquete.
+- **Por qué:** juntar el trabajo de las sesiones en paralelo antes de medir y publicar.
+- **Observado:** `informe.py final-lunes` con asserts: el juez aprobó 4 llamadas que los asserts suspendieron.
+- **Ficheros:** `evals/informe.py`, bitácora, Gantt.
+- **Siguiente:** vuelta de línea base con cola, asserts y métricas guardadas; workflow de CI en GitHub tras el push.
+- **Pruebas:** `uv run pytest`: 110 en verde.
+
 ## 2026-11-20 · META · Documento "Cómo se hizo" para preparar la entrevista
 
 - **Qué:** `docs/como-se-hizo.md`: cronología por fases con lo que falló y cómo se arregló, recorrido comentado de `agent/bot.py`, `agent/herramientas.py`, la reserva atómica de `app/main.py` y `evals/informe.py`, receta para escribir un escenario, 7 ejercicios de 15 minutos y 20 preguntas de entrevista con respuesta corta.

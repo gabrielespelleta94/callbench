@@ -13,7 +13,10 @@ import sys
 from collections import OrderedDict
 from pathlib import Path
 
-import asserts as asr
+try:  # run as a script (evals/ on sys.path) or imported by the tests
+    import asserts as asr
+except ModuleNotFoundError:  # imported as evals.informe (bench worker)
+    from evals import asserts as asr
 
 RAIZ_RUNS = Path(__file__).resolve().parent / "runs"
 MARCA_AGENDA = '"error": "agenda_no_disponible"'
