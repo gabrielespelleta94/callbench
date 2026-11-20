@@ -1,7 +1,9 @@
 """Agent under test: the voice receptionist of a fictional clinic.
 
 Phase 0 of CallBench. Pipecat pipeline: browser audio -> STT (Deepgram)
--> LLM (Groq) -> TTS (Deepgram) -> audio back to the browser. To start:
+-> LLM (Groq) -> TTS (Deepgram) -> audio back to the browser. STT and TTS are
+chosen with CALLBENCH_STT / CALLBENCH_TTS (agent/proveedores.py) and every call
+writes its metrics to a JSONL file (agent/metricas.py). To start:
 
     uv run agent/bot.py      then open http://localhost:7860
 """
@@ -12,6 +14,7 @@ from datetime import date
 from dotenv import load_dotenv
 from loguru import logger
 
+from pipecat.observers.user_bot_latency_observer import UserBotLatencyObserver
 from pipecat.audio.vad.silero import SileroVADAnalyzer
 from pipecat.frames.frames import LLMRunFrame
 from pipecat.pipeline.pipeline import Pipeline
@@ -25,12 +28,12 @@ from pipecat.processors.aggregators.llm_response_universal import (
 from pipecat.runner.types import RunnerArguments
 from pipecat.evals.transport import EvalTransportParams
 from pipecat.runner.utils import create_transport
-from pipecat.services.deepgram.stt import DeepgramSTTService
-from pipecat.services.deepgram.tts import DeepgramTTSService
 from pipecat.services.groq.llm import GroqLLMService
 from pipecat.transports.base_transport import BaseTransport, TransportParams
 
 from agent.herramientas import registrar_herramientas
+from agent.metricas import CallMetricsRecorder, metrics_dir, new_call_id
+from agent.proveedores import stt_provider, tts_provider
 
 load_dotenv(override=True)
 
@@ -58,17 +61,18 @@ def construir_prompt() -> str:
     )
 
 
+LLM_MODEL = "openai/gpt-oss-120b"
+
+
 async def run_bot(transport: BaseTransport):
-    stt = DeepgramSTTService(api_key=os.getenv("DEEPGRAM_API_KEY"))
+    stt_spec, tts_spec = stt_provider(), tts_provider()
+    stt = stt_spec.build(stt_spec)
     llm = GroqLLMService(
         api_key=os.getenv("GROQ_API_KEY"),
         # Reasoning model: with "low" it thinks little before speaking (less latency)
-        settings=GroqLLMService.Settings(model="openai/gpt-oss-120b", reasoning_effort="low"),
+        settings=GroqLLMService.Settings(model=LLM_MODEL, reasoning_effort="low"),
     )
-    tts = DeepgramTTSService(
-        api_key=os.getenv("DEEPGRAM_API_KEY"),
-        settings=DeepgramTTSService.Settings(voice="aura-2-thalia-en"),
-    )
+    tts = tts_spec.build(tts_spec)
 
     # Register the clinic tools and pass them to the context
     tools = registrar_herramientas(llm)
@@ -88,7 +92,26 @@ async def run_bot(transport: BaseTransport):
         aggregators.assistant(),  # stores what the agent said
     ])
 
-    task = PipelineTask(pipeline, params=PipelineParams(enable_metrics=True))
+    # Metrics: TTFB per service + usage (tokens, TTS characters, STT audio seconds),
+    # voice-to-voice latency, all written to one JSONL file per call
+    latency = UserBotLatencyObserver()
+    recorder = CallMetricsRecorder(
+        call_id=new_call_id(),
+        directory=metrics_dir(),
+        stages={stt.name: "stt", llm.name: "llm", tts.name: "tts"},
+        config={
+            "stt": stt_spec.describe(),
+            "llm": {"provider": "groq", "model": LLM_MODEL},
+            "tts": tts_spec.describe(),
+        },
+        latency=latency,
+    )
+    logger.info(f"Métricas de la llamada en {recorder.path}")
+    task = PipelineTask(
+        pipeline,
+        params=PipelineParams(enable_metrics=True, enable_usage_metrics=True),
+        observers=[latency, recorder],
+    )
 
     @transport.event_handler("on_client_connected")
     async def on_client_connected(transport, client):
@@ -101,7 +124,10 @@ async def run_bot(transport: BaseTransport):
         logger.info("Llamada colgada")
         await task.cancel()
 
-    await PipelineRunner(handle_sigint=False).run(task)
+    try:
+        await PipelineRunner(handle_sigint=False).run(task)
+    finally:
+        recorder.close()
 
 
 async def bot(runner_args: RunnerArguments):
