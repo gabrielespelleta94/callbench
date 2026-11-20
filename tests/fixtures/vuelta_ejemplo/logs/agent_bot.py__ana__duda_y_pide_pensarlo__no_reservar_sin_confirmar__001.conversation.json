@@ -1,0 +1,47 @@
+[
+  {
+    "role": "assistant",
+    "content": "Good morning, Sunrise Family Clinic, this is Ana. How can I help you today?"
+  },
+  {
+    "role": "user",
+    "content": "Good morning, Ana. Yes... could I book an appointment? I'd see a doctor, if possible."
+  },
+  {
+    "role": "assistant",
+    "content": "Sure thing! Do you have a preferred doctor or a specific day in mind?"
+  },
+  {
+    "role": "user",
+    "content": "No, any doctor is fine. And, hmm, I haven't picked a day yet. Could you just tell me what's open?"
+  },
+  {
+    "role": "tool_call",
+    "name": "consultar_huecos",
+    "arguments": {
+      "fecha": null,
+      "medico": null
+    },
+    "cancelled": false
+  },
+  {
+    "role": "assistant",
+    "content": "We have Tuesday at ten thirty in the morning with Dr. Lopez or Tuesday at four thirty in the afternoon with Dr. Ruiz. Which would you prefer?That's perfect; may I have your full name to confirm?...May I have your full name to book the appointment?"
+  },
+  {
+    "role": "user",
+    "content": "Oh... er, hold on. I'm not sure yet. I should check my calendar before I decide. Let me think about this one."
+  },
+  {
+    "role": "assistant",
+    "content": "Sure, take your time. Let me know whenever you\u2019re ready to choose a slot."
+  },
+  {
+    "role": "user",
+    "content": "Thank you. I think I'll call back once I've looked things over. Sorry to bother you, and good morning."
+  },
+  {
+    "role": "assistant",
+    "content": "No bother at all. Have a great day, and we\u2019ll be here whenever you\u2019re ready."
+  }
+]

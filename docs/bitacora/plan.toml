@@ -55,7 +55,7 @@ entregable = "El agente reserva de verdad; perfiles de llamante (interrumpe, cal
 [[fase]]
 id = "F4b"
 nombre = "Asserts deterministas, juez LLM y gate de CI"
-estado = "pendiente"
+estado = "en_curso"
 inicio = 2026-11-17
 fin = 2026-11-21
 entregable = "Cada llamada puntuada; CI falla si una versión empeora"
