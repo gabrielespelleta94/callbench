@@ -1,11 +1,12 @@
 """API fixtures: real Postgres (pgserver) with a separate test database.
 
-The `callbench_test` database lives in the same portable Postgres in .pgdata/ but is
-kept apart from the development data. The schema comes from the Alembic migrations
+The `callbench_test` database lives in the same portable Postgres in .pgdata/ (or on
+the DATABASE_URL server, as in CI) but is kept apart from the development data. The schema comes from the Alembic migrations
 (so they get tested too) and each test starts with empty tables and reseeded slots.
 """
 
 import importlib
+import os
 
 import psycopg
 import pytest
@@ -26,14 +27,21 @@ BASE_TEST = "callbench_test"
 SEMILLA = importlib.import_module("migrations.versions.0002_semilla_huecos").HUECOS
 
 
+def _url_de(base: str) -> str:
+    """URL for database `base`: on the DATABASE_URL server if set (CI), else pgserver."""
+    if os.environ.get("DATABASE_URL"):
+        return normalizar(make_url(os.environ["DATABASE_URL"]).set(database=base).render_as_string(False))
+    return servidor_local(base)
+
+
 @pytest.fixture(scope="session")
 def url_test() -> str:
-    admin = servidor_local("postgres").replace("postgresql+psycopg", "postgresql")
+    admin = _url_de("postgres").replace("postgresql+psycopg", "postgresql")
     with psycopg.connect(admin, autocommit=True) as con:
         existe = con.execute("SELECT 1 FROM pg_database WHERE datname = %s", (BASE_TEST,))
         if existe.fetchone() is None:
             con.execute(f"CREATE DATABASE {BASE_TEST}")
-    url = normalizar(servidor_local(BASE_TEST))
+    url = normalizar(_url_de(BASE_TEST))
 
     # Clean schema from the migrations: drop the previous one and recreate it
     motor = create_engine(url, poolclass=NullPool)

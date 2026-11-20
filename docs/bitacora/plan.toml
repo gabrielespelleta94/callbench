@@ -62,11 +62,11 @@ entregable = "Cada llamada puntuada; CI falla si una versión empeora"
 
 [[fase]]
 id = "F5"
-nombre = "Latencia por etapa y comparación nube vs local"
-estado = "pendiente"
-inicio = 2026-11-22
-fin = 2026-11-26
-entregable = "p50/p95 por etapa (STT, LLM, TTS); Groq/Deepgram vs Whisper/Ollama/Piper"
+nombre = "Latencia por etapa y coste por llamada"
+estado = "en_curso"
+inicio = 2026-11-20
+fin = 2026-11-22
+entregable = "JSONL de métricas por llamada; p50/p95 por etapa (STT, LLM, TTS) y voz a voz; coste a precio de lista"
 
 [[fase]]
 id = "F6"

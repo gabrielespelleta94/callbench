@@ -1,0 +1,89 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Postgres as an Actions service instead of pgserver: app/db/config.py and
+    # tests/conftest.py use DATABASE_URL when it is set. The tests create their own
+    # callbench_test database on this server and migrate it with Alembic.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: callbench
+          POSTGRES_PASSWORD: callbench
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U callbench"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://callbench:callbench@localhost:5432/postgres
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+          enable-cache: true
+      - name: Install dependencies
+        run: uv sync --locked
+      - name: Tests
+        run: uv run pytest -q
+
+  # Evals against the real bot (Groq + Deepgram). Manual only: they spend API quota.
+  # Needs the GROQ_API_KEY and DEEPGRAM_API_KEY repository secrets. Uncomment when the
+  # secrets exist and the gate (tools/comparar.py, phase B3) is in place.
+  #
+  # evals:
+  #   if: github.event_name == 'workflow_dispatch'
+  #   needs: tests
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 30
+  #   services:
+  #     postgres:
+  #       image: postgres:16
+  #       env: { POSTGRES_USER: callbench, POSTGRES_PASSWORD: callbench, POSTGRES_DB: postgres }
+  #       ports: ["5432:5432"]
+  #       options: --health-cmd "pg_isready -U callbench" --health-interval 5s --health-retries 10
+  #   env:
+  #     DATABASE_URL: postgresql://callbench:callbench@localhost:5432/postgres
+  #     GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+  #     DEEPGRAM_API_KEY: ${{ secrets.DEEPGRAM_API_KEY }}
+  #     CALLBENCH_METRICS_DIR: ${{ github.workspace }}/metrics
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: astral-sh/setup-uv@v6
+  #       with: { python-version: "3.12", enable-cache: true }
+  #     - run: uv sync --locked
+  #     - run: uv run alembic upgrade head
+  #     - run: uv run python -m app.db.reiniciar   # agenda relative to this week
+  #     - name: API and bot in the background
+  #       run: |
+  #         uv run uvicorn app.main:app --port 8000 &
+  #         uv run agent/bot.py &
+  #         sleep 20
+  #     - name: Small suite (N kept low for the Groq quota)
+  #       run: uv run python evals/lanzar.py suite evals/suite.yaml -r 1 -n ci-${{ github.run_id }}
+  #     - run: uv run python evals/informe.py ci-${{ github.run_id }}
+  #     - run: uv run python tools/coste.py
+  #     # - run: uv run python tools/comparar.py <base> <candidate>   # gate, phase B3
+  #     - uses: actions/upload-artifact@v4
+  #       if: always()
+  #       with:
+  #         name: eval-run
+  #         path: |
+  #           runs/
+  #           metrics/

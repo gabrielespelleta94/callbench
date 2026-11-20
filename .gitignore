@@ -20,6 +20,9 @@ wheels/
 evals/logs/
 runs/
 
+# Per-call metrics (agent/metricas.py)
+metrics/
+
 # Portable Postgres data (pgserver)
 .pgdata/
 
