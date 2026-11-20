@@ -90,7 +90,13 @@ class EjecutorBot:
         if _puerto_abierto(self.puerto):
             return [Resultado(t.escenario, "infra", f"puerto {self.puerto} ocupado", {})]
 
-        entorno = {**os.environ, "CLINICA_API_URL": self.api_url}
+        # Metrics (agent/metricas.py) inside the job directory, so each call keeps its own
+        # latency and cost (bench/resultados.py reads <job>/metrics/*.jsonl)
+        entorno = {
+            **os.environ,
+            "CLINICA_API_URL": self.api_url,
+            "CALLBENCH_METRICS_DIR": str(directorio / "metrics"),
+        }
         with open(directorio / "bot.log", "wb") as log_bot:
             bot = subprocess.Popen(
                 [sys.executable, str(RAIZ / "agent" / "bot.py"), "--port", str(self.puerto)],

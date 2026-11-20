@@ -24,8 +24,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.conexion import get_session
 from app.db.modelos import Cita as CitaDB
 from app.db.modelos import Hueco as HuecoDB
+from app.resultados import router as router_resultados
 
 app = FastAPI(title="CallBench · Clinic API")
+# Scorecard: stored rounds, their calls and the diff between two (dashboard/)
+app.include_router(router_resultados)
 
 
 class Hueco(BaseModel):

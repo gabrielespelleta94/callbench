@@ -75,3 +75,47 @@ no booking without a repeated doctor + time and a "yes", no invented doctors or 
 `consultar_huecos` before asking the name and before booking. Which asserts apply to each
 scenario is set in `evals/asserts.toml`. A call passes only if the judge and the asserts
 pass; the report also counts the calls the judge passed and the asserts failed.
+
+## Regression gate (tools/comparar.py)
+
+    uv run python tools/comparar.py <base> <candidate>           # per-scenario table + exit code
+    uv run python tools/comparar.py <base> <candidate> --json    # the same diff the scorecard shows
+    uv run python tools/comparar.py --resumen a+b > evals/baselines/base.json
+
+Each side is a committed summary JSON (`evals/baselines/*.json`), a suite round under
+`evals/runs/` (results.jsonl + logs, graded with judge + asserts on the fly) or a round
+stored in Postgres (queue rounds, or suite rounds loaded with `tools/importar_vuelta.py`).
+`a+b` pools the calls of several rounds of the same version. Only the last execution of
+each queue job counts, and infrastructure failures are left out of the rates.
+
+The rule, per scenario, over valid calls (passed + failed) of each side:
+
+| State | When |
+|---|---|
+| **worse** | the candidate has **at least 2 passes fewer** than the base rate predicts for its N, **and** either its Wilson 95 % interval lies entirely below the base's pass rate or both sides have N >= 10 |
+| **inconclusive** | the scenario is missing or has 0 valid calls on one side, or the candidate has more infra failures than valid calls in it |
+| **better** | at least 2 passes more and the interval entirely above the base's rate |
+| **same** | anything else: within noise |
+
+The latency rule: the voice-to-voice p95 (agent/metricas.py) grows more than 20 %, with at
+least 5 measured turns on each side. Exit code: **1** if a scenario got worse or latency
+regressed, else **2** if something was inconclusive, else **0**.
+
+Why the 2-pass minimum: with the base at 100 % (3/3), a single failure (2/3, interval
+21-94 %) already puts the interval below the base rate; one lost call is noise, not a
+regression. Consequently a CI run needs at least 2 attempts per scenario to be able to flag
+anything (the `evals` job defaults to `-r 2`).
+
+`evals/baselines/base.json` is `base-2026-11-20+base-2026-11-20-b` (14/18 valid calls
+passed, 22 infra). CI runs the `evals` job only on demand (Actions → CI → Run workflow),
+with the `GROQ_API_KEY` and `DEEPGRAM_API_KEY` secrets; the push job runs only pytest.
+
+## Scorecard (dashboard/)
+
+    uv run python tools/importar_vuelta.py <suite round>         # suite rounds into Postgres
+    uv run uvicorn app.main:app --port 8005 --loop app.db.bucle:selector_loop
+    npm --prefix dashboard install && npm --prefix dashboard run dev   # http://localhost:5173
+
+The API (`app/resultados.py`) serves `GET /vueltas`, `GET /vueltas/{id}` (calls with
+transcript, judge and asserts) and `GET /diff?base=&candidata=`; the dashboard shows the
+per-scenario diff, the gate verdict, judge vs asserts, latency and cost per call.

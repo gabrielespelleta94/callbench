@@ -71,7 +71,7 @@ entregable = "JSONL de métricas por llamada; p50/p95 por etapa (STT, LLM, TTS) 
 [[fase]]
 id = "F6"
 nombre = "Scorecard en React con diff entre versiones"
-estado = "pendiente"
-inicio = 2026-11-27
-fin = 2026-12-04
+estado = "hecho"
+inicio = 2026-11-21
+fin = 2026-11-21
 entregable = "Dashboard que compara dos versiones del agente"

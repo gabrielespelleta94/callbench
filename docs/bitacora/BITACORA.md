@@ -12,6 +12,16 @@ que no es de ninguna fase (estructura, documentación, herramientas).
 
 ---
 
+## 2026-11-21 · F6 · Gate de regresión, API de resultados y scorecard React
+
+- **Qué:** `bench/resultados.py` reúne la nota de cada llamada (juez + asserts), el resumen por escenario con intervalos de Wilson, la latencia y el coste, y la regla de regresión. Lo usan el gate `tools/comparar.py` (salida 1/2/0, `--json`, `--resumen a+b`) y el router `app/resultados.py` (`GET /vueltas`, `/vueltas/{id}`, `/diff`), montado en `app/main.py`. `tools/importar_vuelta.py` sube a Postgres las vueltas de `suite` con asserts y transcripción. El dashboard `dashboard/` (Vite + React + TS, oscuro) muestra el selector de dos vueltas, el veredicto del gate, la tabla por escenario con deltas e intervalos, la tarjeta "el juez aprobó / los asserts suspendieron", latencia y coste, y el detalle de cada llamada con la transcripción y qué assert falló. En CI, job `evals` manual (`workflow_dispatch`, `-r 2` por defecto) que corre una suite corta y el gate contra `evals/baselines/base.json`. El worker deja las métricas de cada trabajo en su carpeta (`CALLBENCH_METRICS_DIR`) para enlazar latencia y coste con cada llamada.
+- **Regla (D-17):** un escenario empeora si pierde ≥2 aprobados respecto a lo que predice la tasa de la base y además su IC95 queda entero por debajo de esa tasa (o N≥10 en los dos lados). La regla literal (solo el IC) marcaba 3/3 → 2/3 como regresión. p95 voz a voz +20 % también falla.
+- **Datos:** importadas las 8 vueltas guardadas en `main/evals/runs`. `base-c1` → `final-lunes`: 2/15 (13 %) → 9/13 (69 %), sin regresiones, mejora en `duda_y_pide_pensarlo`. Línea base del CI: `base-2026-11-20+base-2026-11-20-b`, 14/18 (78 %, IC 55-91 %). Ninguna vuelta guardada tiene métricas (modalidad texto): el bloque de latencia y coste sale vacío a propósito, sin cifras inventadas.
+- **Por qué:** B3 y B5 de `docs/plan-mejora.md` (F6 se adelanta del 27 nov-4 dic al 21 nov, como en el plan del fin de semana). Un solo módulo para que el CI y el dashboard no discrepen (D-18).
+- **Ficheros:** `bench/resultados.py`, `tools/comparar.py`, `tools/importar_vuelta.py`, `app/resultados.py`, `app/main.py`, `bench/worker.py`, `.github/workflows/ci.yml`, `evals/baselines/base.json`, `evals/README.md`, `dashboard/`, `docs/img/scorecard.png`, `tests/test_comparar.py`, `tests/test_resultados_api.py`, `.claude/launch.json`, `.gitignore`.
+- **Pruebas:** `uv run pytest`: 189 en verde. `npm run build` sin errores. Scorecard comprobado en el navegador integrado a 1440 px con datos reales (diff, filtros, panel de llamada).
+- **Siguiente:** primera vuelta por la cola con métricas para que se rellenen latencia y coste; lanzar el job `evals` en GitHub cuando estén los secretos (aún no se ha ejecutado allí).
+
 ## 2026-11-21 · F4 · Línea base con asserts: 14/18 válidas y el juez aprobó las 4 que fallan
 
 - **Qué:** dos rondas de la versión actual de Ana (`base-2026-11-20`, `suite -r 3`, y `base-2026-11-20-b`, `-r 5`), calificadas con juez + asserts por `evals/informe.py`.

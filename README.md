@@ -24,6 +24,12 @@ CallBench builds on `pipecat.evals` for scenarios, simulated callers and the jud
 what it lacks: a Postgres job queue with retries, run history, version-to-version diffs,
 cost and per-stage latency, a dashboard and a CI gate.
 
+![CallBench scorecard: base-c1 vs final-lunes, per-scenario pass rates with Wilson intervals and the judge-vs-asserts gap](docs/img/scorecard.png)
+
+The scorecard (`dashboard/`, real rounds `base-c1` → `final-lunes`, 1-2 Nov 2026, text
+modality, N=15/13): the regression gate's verdict, per-scenario pass rates with 95 % Wilson
+intervals, and the calls the LLM judge passed but the deterministic asserts failed.
+
 ## Stack
 
 | Piece | Tech |
@@ -76,4 +82,4 @@ uv run python evals/lanzar.py run evals -v --logs-dir evals/logs
 - [ ] Phase 4: agent tool calling against the clinic API (done), synthetic callers on top of `pipecat.evals` (first scenarios running)
 - [ ] Phase 4b: deterministic assertions, LLM judge, CI gate
 - [ ] Phase 5: per-stage latency and cloud vs local comparison
-- [ ] Phase 6: React scorecard with version diff
+- [x] Phase 6: React scorecard with version diff (`dashboard/`, `tools/comparar.py` gate)

@@ -31,3 +31,8 @@ metrics/
 # Local working files for Claude
 CLAUDE.md
 .claude/
+
+# Scorecard (Vite)
+dashboard/node_modules/
+dashboard/dist/
+dashboard/*.tsbuildinfo

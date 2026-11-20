@@ -64,9 +64,9 @@ llamantes sintéticos (F4) ──> cola de trabajos en Postgres (F3) ───�
 
 <!-- Actualizar al cerrar cada sesión de trabajo (2-4 líneas). -->
 
-- **Fase actual:** F4 en curso. Ana consulta y reserva contra la API; cinco exámenes de `pipecat.evals`, y la versión actual saca 13/15 (los 2 fallos son errores del lado del examen, no de Ana).
-- **Hecho:** F0 (primera llamada, ~0,9 s de voz a voz), F1 y F2 (API sobre Postgres portátil con migraciones). Primer bucle medir → arreglar → medir: 10/15 → 13/15. Informe que separa suspensos de infraestructura (`evals/informe.py`). 30 tests en verde. CallBench va sobre `pipecat.evals` (D-07).
-- **Siguiente paso:** fin de semana 21-22 nov según [docs/plan-mejora.md](../plan-mejora.md) (pendiente del OK de Gabriel). Guía rápida en [docs/guia-callbench.md](../guia-callbench.md).
+- **Fase actual:** fin de semana 21-22 nov ([docs/plan-mejora.md](../plan-mejora.md)). Hechas F3 (cola), asserts (F4b), métricas (F5) y F6: gate `tools/comparar.py`, API `/vueltas` `/diff` y scorecard en `dashboard/` (captura en `docs/img/scorecard.png`).
+- **Hecho:** F0-F3, F6. Línea base con asserts: 14/18 (78 %). El juez aprueba llamadas que los asserts suspenden (8 de 12 en `base-c1`). 189 tests en verde.
+- **Siguiente paso:** vueltas por la cola con métricas (latencia y coste por llamada en el scorecard), ElevenLabs (Fase D), lanzar el job `evals` en GitHub con los secretos.
 - **Bloqueos:** ninguno. Repo público: https://github.com/gabrielespelleta94/callbench
 
 ## Convenciones

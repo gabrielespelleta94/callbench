@@ -1,0 +1,156 @@
+{
+  "escenarios": [
+    {
+      "escenario": "saludo_y_huecos/huecos_dr_lopez",
+      "aprobado": 4,
+      "suspenso": 0,
+      "infra": 4,
+      "juez_ok": 4,
+      "asserts_ok": 0,
+      "evaluadas": 0,
+      "discrepa": 0,
+      "n": 4,
+      "tasa": 1.0,
+      "ic": [
+        0.5101091596030786,
+        0.9999999999999999
+      ],
+      "voice_to_voice": {
+        "n": 0,
+        "p50": null,
+        "p95": null
+      }
+    },
+    {
+      "escenario": "cita_dr_lopez/reserva_real",
+      "aprobado": 2,
+      "suspenso": 1,
+      "infra": 5,
+      "juez_ok": 3,
+      "asserts_ok": 2,
+      "evaluadas": 3,
+      "discrepa": 1,
+      "n": 3,
+      "tasa": 0.6666666666666666,
+      "ic": [
+        0.2076595988078242,
+        0.9385080559790691
+      ],
+      "voice_to_voice": {
+        "n": 0,
+        "p50": null,
+        "p95": null
+      }
+    },
+    {
+      "escenario": "medico_inexistente/dr_fernando",
+      "aprobado": 2,
+      "suspenso": 1,
+      "infra": 5,
+      "juez_ok": 3,
+      "asserts_ok": 2,
+      "evaluadas": 3,
+      "discrepa": 1,
+      "n": 3,
+      "tasa": 0.6666666666666666,
+      "ic": [
+        0.2076595988078242,
+        0.9385080559790691
+      ],
+      "voice_to_voice": {
+        "n": 0,
+        "p50": null,
+        "p95": null
+      }
+    },
+    {
+      "escenario": "lo_antes_posible/sin_fecha",
+      "aprobado": 2,
+      "suspenso": 2,
+      "infra": 4,
+      "juez_ok": 4,
+      "asserts_ok": 2,
+      "evaluadas": 4,
+      "discrepa": 2,
+      "n": 4,
+      "tasa": 0.5,
+      "ic": [
+        0.15003898774401986,
+        0.8499610122559802
+      ],
+      "voice_to_voice": {
+        "n": 0,
+        "p50": null,
+        "p95": null
+      }
+    },
+    {
+      "escenario": "duda_y_pide_pensarlo/no_reservar_sin_confirmar",
+      "aprobado": 4,
+      "suspenso": 0,
+      "infra": 4,
+      "juez_ok": 4,
+      "asserts_ok": 4,
+      "evaluadas": 4,
+      "discrepa": 0,
+      "n": 4,
+      "tasa": 1.0,
+      "ic": [
+        0.5101091596030786,
+        0.9999999999999999
+      ],
+      "voice_to_voice": {
+        "n": 0,
+        "p50": null,
+        "p95": null
+      }
+    }
+  ],
+  "total": {
+    "aprobado": 14,
+    "suspenso": 4,
+    "infra": 22,
+    "juez_ok": 18,
+    "asserts_ok": 10,
+    "evaluadas": 14,
+    "discrepa": 4,
+    "n": 18,
+    "tasa": 0.7777777777777778,
+    "ic": [
+      0.5478541549399641,
+      0.9099907195415445
+    ]
+  },
+  "latencia": {
+    "voice_to_voice": {
+      "n": 0,
+      "p50": null,
+      "p95": null
+    },
+    "ttfb": {
+      "stt": {
+        "n": 0,
+        "p50": null,
+        "p95": null
+      },
+      "llm": {
+        "n": 0,
+        "p50": null,
+        "p95": null
+      },
+      "tts": {
+        "n": 0,
+        "p50": null,
+        "p95": null
+      }
+    }
+  },
+  "coste": {
+    "n": 0,
+    "p50": null,
+    "p95": null,
+    "media": null,
+    "moneda": "USD"
+  },
+  "vuelta": "base-2026-11-20+base-2026-11-20-b"
+}
