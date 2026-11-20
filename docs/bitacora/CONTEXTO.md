@@ -66,7 +66,7 @@ llamantes sintéticos (F4) ──> cola de trabajos en Postgres (F3) ───�
 
 - **Fase actual:** F4 en curso. Ana consulta y reserva contra la API; cinco exámenes de `pipecat.evals`, y la versión actual saca 13/15 (los 2 fallos son errores del lado del examen, no de Ana).
 - **Hecho:** F0 (primera llamada, ~0,9 s de voz a voz), F1 y F2 (API sobre Postgres portátil con migraciones). Primer bucle medir → arreglar → medir: 10/15 → 13/15. Informe que separa suspensos de infraestructura (`evals/informe.py`). 30 tests en verde. CallBench va sobre `pipecat.evals` (D-07).
-- **Siguiente paso:** comprobar API, huecos y cuota antes de lanzar una vuelta; cola (F3).
+- **Siguiente paso:** fin de semana 21-22 nov según [docs/plan-mejora.md](../plan-mejora.md) (pendiente del OK de Gabriel). Guía rápida en [docs/guia-callbench.md](../guia-callbench.md).
 - **Bloqueos:** ninguno. Repo público: https://github.com/gabrielespelleta94/callbench
 
 ## Convenciones

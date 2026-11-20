@@ -12,6 +12,15 @@ que no es de ninguna fase (estructura, documentación, herramientas).
 
 ---
 
+## 2026-11-20 · META · Plan de mejora para el fin de semana y guía del proyecto
+
+- **Qué:** `docs/plan-mejora.md` (fases A-E con horas, orden sábado/domingo, riesgos, recortes y lo que hace falta de Gabriel) y `docs/guia-callbench.md` (pipeline, herramientas, evals y decisiones, en 20 minutos). Comprobado el estado real: tests, API, claves y dos escenarios contra el bot en vivo.
+- **Por qué:** dejar CallBench completo y publicado con cifras medidas, y comparar Deepgram con ElevenLabs.
+- **Hallazgos:** la agenda estaba caducada (huecos del 4 de noviembre) hasta `reiniciar`. En `cita_dr_lopez` Ana reservó sin repetir los datos ni esperar un sí y el juez aprobó con P(yes)=0,98: hacen falta asserts deterministas. Los evals van en modalidad texto, así que no miden STT ni TTS. Las métricas de Pipecat (TTFB, tokens) solo llegan al log. El README promete la alternativa local y el dashboard, que no existen.
+- **Ficheros:** `docs/plan-mejora.md`, `docs/guia-callbench.md`.
+- **Siguiente:** con el OK de Gabriel, actualizar `plan.toml` (F3-F6 al 21-22 nov, fases nuevas de ElevenLabs y publicación) y empezar por la Fase A.
+- **Pruebas:** `uv run pytest`: 30 en verde (78 s). `saludo_y_huecos` + `cita_dr_lopez` contra el bot en vivo: 2/2 (27 s). Claves de Groq y Deepgram válidas. Historial de git sin `.env` ni patrones de clave.
+
 ## 2026-11-02 · F4 · Informe que separa suspensos de fallos de infraestructura
 
 - **Qué:** `uv run python evals/informe.py <vuelta>` clasifica cada intento como aprobado, suspenso o infra (juez sin respuesta, Groq rechaza la llamada a herramienta, proceso del bot muerto, API caída detectada por `agenda_no_disponible` en el log, cualquier otro error). La tasa se calcula sobre intentos válidos. Código de salida: 0 todo aprobado, 1 algún suspenso, 2 sin suspensos pero con infra (no concluyente). Avisa si hay intentos repetidos por reutilizar el nombre.
