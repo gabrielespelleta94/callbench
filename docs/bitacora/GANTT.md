@@ -50,7 +50,7 @@ gantt
 
 ## Últimas entradas de la bitácora
 
-- 2026-11-21 · **F4** · Guarda de confirmación en `reservar_cita`; v2 sin medir por cuota de Groq
+- 2026-11-21 · **F4** · Guarda de confirmación en `reservar_cita`; v1 medida, v2 a medias por cuota de Groq
 - 2026-11-21 · **F4** · Línea base con asserts: 14/18 válidas y el juez aprobó las 4 que fallan
 - 2026-11-20 · **META** · Unidas en main las ramas de cola, asserts, métricas+CI y guía
 - 2026-11-20 · **META** · Documento "Cómo se hizo" para preparar la entrevista

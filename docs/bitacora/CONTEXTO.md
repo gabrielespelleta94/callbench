@@ -65,8 +65,8 @@ llamantes sintéticos (F4) ──> cola de trabajos en Postgres (F3) ───�
 <!-- Actualizar al cerrar cada sesión de trabajo (2-4 líneas). -->
 
 - **Fase actual:** F4 en curso. Cola (F3), asserts (F4b) y métricas (F5) en `main`. Rama `claude/ana-confirmacion-941b24`: guarda de confirmación en `reservar_cita` (comprueba el sí del paciente en la conversación) y clasificador que atribuye la herramienta inexistente y los 429 de Ana.
-- **Hecho:** línea base con asserts (14/18 válidas, 4 fallos de confirmación que el juez aprobó). `v1-base` por la cola: 3/6 válidas, la mitad de los trabajos perdidos por la cuota diaria de Groq. El `file` inexistente de la línea base era de la persona simulada, no de Ana.
-- **Siguiente paso:** medir `v1-base-b` y `v2-confirmacion` (dos tandas de 4 escenarios × 3) cuando Groq libere cuota, y comparar con `tools/tabla_wilson.py`. Comandos en la última entrada de la bitácora.
+- **Hecho:** línea base con asserts (14/18 válidas, 4 fallos de confirmación que el juez aprobó). `v1-base` por la cola, dos vueltas: 11/18 válidas, 6 fallos de confirmación. `v2-confirmacion-a` a medias (3/4; la guarda paró una vez una frase del paciente inventada por Ana). El `file` inexistente de la línea base era de la persona simulada, no de Ana.
+- **Siguiente paso:** terminar `v2-confirmacion-a` (8 trabajos en cola) y `v2-confirmacion-b` cuando Groq libere cuota, y comparar con `tools/tabla_wilson.py`. Comandos en la última entrada de la bitácora.
 - **Bloqueos:** cuota diaria de Groq (200k tokens en ventana móvil de 24 h) para medir v2. Repo público: https://github.com/gabrielespelleta94/callbench
 
 ## Convenciones
