@@ -139,7 +139,7 @@ def test_vuelta_de_la_cola_toma_la_ultima_ejecucion(tmp_path):
     filas, reintentos = filas_de_vuelta(tmp_path)
     assert reintentos == 1
     assert [f.get("passed") for f, _ in filas] == [True, None]
-    assert filas[1][0]["error"] == "sin results.jsonl"
+    assert filas[1][0]["error"] == "sin results.jsonl" and filas[1][0]["scenario"] == "a/x"
 
 
 def test_vuelta_de_la_cola_lee_bot_log_del_trabajo(tmp_path):
@@ -149,3 +149,27 @@ def test_vuelta_de_la_cola_lee_bot_log_del_trabajo(tmp_path):
     )
     detalle, _ = analizar(tmp_path, con_asserts=False)
     assert detalle[0]["veredicto"] == "infra" and "API" in detalle[0]["causa"]
+
+
+def test_429_en_el_llm_de_ana_es_infra():
+    # The judge fails a silent call, but the bot log shows Ana's LLM was refused for quota
+    log = "GroqLLMService#0 exception: Error during completion: Error code: 429 - Rate limit"
+    veredicto, causa = clasificar(fila(ended_by="silence"), log)
+    assert veredicto == "infra" and "429" in causa
+
+
+def test_429_no_tapa_un_aprobado():
+    assert clasificar(fila(passed=True), "Error code: 429")[0] == "aprobado"
+
+
+def test_bot_que_no_responde_es_infra():
+    eventos = [{"type": "llm_started", "at": 3.3}]
+    f = fila(kind="simulation", ended_by="silence", events_seen=eventos)
+    veredicto, causa = clasificar(f)
+    assert veredicto == "infra" and "no llego a responder" in causa
+
+
+def test_bot_que_responde_y_suspende_sigue_siendo_suspenso():
+    eventos = [{"type": "llm_started"}, {"type": "llm_response", "text": "Hello"}]
+    f = fila(kind="simulation", events_seen=eventos, reason="judge said no")
+    assert clasificar(f)[0] == "suspenso"

@@ -25,6 +25,8 @@ TRUNCADO = 80
 # Groq refuses a completion that calls a tool the request did not offer. The bot's LLM
 # (Ana) and the simulated patient both run on Groq: the bot log tells which one it was.
 HERRAMIENTA_INEXISTENTE = re.compile(r"attempted to call tool '([^']+)' which was not in request\.tools")
+# Ana's own LLM refused by Groq for quota (the call goes silent; not the agent's fault)
+GROQ_429 = re.compile(r"Error code: 429|Rate limit reached for model")
 TRABAJO = re.compile(r"^(?P<escenario>.+)__(?P<intento>\d{3})__e(?P<ejecucion>\d+)$")
 
 
@@ -59,6 +61,18 @@ def causa_infra(fila: dict) -> str | None:
     return None
 
 
+def _bot_mudo(fila: dict) -> bool:
+    """A simulation where the bot never produced a single response: nothing of Ana to grade.
+
+    Seen when Groq's daily quota runs out mid-request: the client keeps retrying the 429
+    without logging an error and the simulated patient hangs up on the silence.
+    """
+    eventos = fila.get("events_seen")
+    if fila.get("kind") != "simulation" or not isinstance(eventos, list):
+        return False
+    return not any(isinstance(e, dict) and e.get("type") == "llm_response" for e in eventos)
+
+
 def api_caida(texto_log: str | None) -> bool:
     return bool(texto_log) and MARCA_AGENDA in texto_log
 
@@ -81,6 +95,10 @@ def clasificar(fila: dict, texto_log: str | None = None) -> tuple[str, str | Non
     causa = causa_infra(fila)
     if causa:
         return "infra", causa
+    if GROQ_429.search(texto_log or ""):
+        return "infra", "LLM de Ana sin cuota en Groq (429)"
+    if _bot_mudo(fila):
+        return "infra", "Ana no llego a responder (0 respuestas del LLM; probable cuota Groq)"
     if api_caida(texto_log):
         return "infra", "API de la clinica caida (agenda_no_disponible)"
     return "suspenso", _motivo_suspenso(fila)
@@ -138,6 +156,10 @@ def filas_de_vuelta(dir_vuelta: Path) -> tuple[list[tuple[dict, Path]], int]:
             filas.append(
                 ({"scenario": escenario, "attempt": intento, "error": "sin results.jsonl"}, d)
             )
+    # Use the full "<file>/<name>" scenario of the other rows for the ones without results
+    completos = {f["scenario"].split("/")[0]: f["scenario"] for f, _ in filas if "/" in f["scenario"]}
+    for f, _ in filas:
+        f["scenario"] = completos.get(f["scenario"], f["scenario"])
     return filas, reintentos
 
 
