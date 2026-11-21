@@ -41,9 +41,9 @@ Ejecutor = Callable[[Trabajo], list[Resultado]]
 
 def resultado_de_fila(fila: dict, dir_logs: Path | None = None) -> Resultado:
     """Classify a results.jsonl record the same way evals/informe.py does."""
-    veredicto, causa = clasificar(fila)
-    if veredicto == "suspenso" and dir_logs is not None:
-        veredicto, causa = clasificar(fila, _leer_log(fila, dir_logs))
+    # The bot log decides who asked for a nonexistent tool and whether the API was down
+    texto_log = _leer_log(fila, dir_logs) if dir_logs is not None else None
+    veredicto, causa = clasificar(fila, texto_log)
     # The judge's own verdict: a simulation's `succeeded`; a scripted scenario has no
     # separate one (its `passed` already mixes judge evals and event checks)
     juez = fila.get("succeeded", fila.get("passed")) if veredicto != "infra" else None

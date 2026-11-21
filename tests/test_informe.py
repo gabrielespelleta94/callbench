@@ -8,7 +8,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "evals"))
 
-from informe import agregar, clasificar, codigo_salida, intentos_repetidos  # noqa: E402
+from informe import agregar, clasificar, codigo_salida, intentos_repetidos
 
 
 def fila(**campos):
@@ -83,3 +83,93 @@ def test_detecta_nombre_de_vuelta_reutilizado():
     uno = {"escenario": "a", "intento": 1}
     assert intentos_repetidos([uno, {"escenario": "a", "intento": 2}]) is False
     assert intentos_repetidos([uno, dict(uno)]) is True
+
+
+# ---------------------------------------------------------------- nonexistent tool
+
+ERROR_FILE = (
+    "Error during completion: tool call validation failed: "
+    "attempted to call tool 'file' which was not in request.tools"
+)
+
+
+def test_herramienta_inexistente_de_ana_es_suspenso():
+    # The refusal is in the bot log: Ana's own LLM asked for the tool
+    log = f"GroqLLMService#0 error: {ERROR_FILE}"
+    veredicto, causa = clasificar(fila(error=ERROR_FILE, ended_by="error"), log)
+    assert veredicto == "suspenso" and "Ana" in causa and "file" in causa
+
+
+def test_herramienta_inexistente_de_ana_sin_error_en_la_fila():
+    # The harness may not report it; the bot log alone is enough
+    log = f"... {ERROR_FILE} ..."
+    assert clasificar(fila(), log)[0] == "suspenso"
+
+
+def test_herramienta_inexistente_de_la_persona_es_infra():
+    # Only the harness saw it (as in base-2026-11-20-b #2): the simulated patient's LLM
+    veredicto, causa = clasificar(fila(error=ERROR_FILE, ended_by="error"), "bot log sin error")
+    assert veredicto == "infra" and "persona" in causa and "file" in causa
+
+
+# ---------------------------------------------------------------- bench round layout
+
+import json
+
+from informe import analizar, filas_de_vuelta
+
+
+def _trabajo(raiz: Path, nombre: str, filas: list[dict] | None, bot_log: str = "") -> Path:
+    d = raiz / nombre
+    (d / "logs").mkdir(parents=True)
+    (d / "bot.log").write_text(bot_log, encoding="utf-8")
+    if filas is not None:
+        lineas = []
+        for f in filas:
+            f = {**f, "artifacts": {"log": str(d / "logs" / "x__y.log")}}
+            lineas.append(json.dumps(f))
+        (d / "results.jsonl").write_text("\n".join(lineas), encoding="utf-8")
+    return d
+
+
+def test_vuelta_de_la_cola_toma_la_ultima_ejecucion(tmp_path):
+    _trabajo(tmp_path, "a__001__e1", [fila(scenario="a/x", error="judge call failed")])
+    _trabajo(tmp_path, "a__001__e2", [fila(scenario="a/x", passed=True)])
+    _trabajo(tmp_path, "a__002__e1", None)  # harness died, nothing written
+    filas, reintentos = filas_de_vuelta(tmp_path)
+    assert reintentos == 1
+    assert [f.get("passed") for f, _ in filas] == [True, None]
+    assert filas[1][0]["error"] == "sin results.jsonl" and filas[1][0]["scenario"] == "a/x"
+
+
+def test_vuelta_de_la_cola_lee_bot_log_del_trabajo(tmp_path):
+    # API down: the marker is only in <job>/bot.log, not next to the transcript
+    _trabajo(
+        tmp_path, "a__001__e1", [fila(scenario="a/x")], bot_log='{"error": "agenda_no_disponible"}'
+    )
+    detalle, _ = analizar(tmp_path, con_asserts=False)
+    assert detalle[0]["veredicto"] == "infra" and "API" in detalle[0]["causa"]
+
+
+def test_429_en_el_llm_de_ana_es_infra():
+    # The judge fails a silent call, but the bot log shows Ana's LLM was refused for quota
+    log = "GroqLLMService#0 exception: Error during completion: Error code: 429 - Rate limit"
+    veredicto, causa = clasificar(fila(ended_by="silence"), log)
+    assert veredicto == "infra" and "429" in causa
+
+
+def test_429_no_tapa_un_aprobado():
+    assert clasificar(fila(passed=True), "Error code: 429")[0] == "aprobado"
+
+
+def test_bot_que_no_responde_es_infra():
+    eventos = [{"type": "llm_started", "at": 3.3}]
+    f = fila(kind="simulation", ended_by="silence", events_seen=eventos)
+    veredicto, causa = clasificar(f)
+    assert veredicto == "infra" and "no llego a responder" in causa
+
+
+def test_bot_que_responde_y_suspende_sigue_siendo_suspenso():
+    eventos = [{"type": "llm_started"}, {"type": "llm_response", "text": "Hello"}]
+    f = fila(kind="simulation", events_seen=eventos, reason="judge said no")
+    assert clasificar(f)[0] == "suspenso"

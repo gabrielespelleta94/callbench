@@ -64,10 +64,10 @@ llamantes sintéticos (F4) ──> cola de trabajos en Postgres (F3) ───�
 
 <!-- Actualizar al cerrar cada sesión de trabajo (2-4 líneas). -->
 
-- **Fase actual:** fin de semana 21-22 nov ([docs/plan-mejora.md](../plan-mejora.md)). Hechas F3 (cola), asserts (F4b), métricas (F5) y F6: gate `tools/comparar.py`, API `/vueltas` `/diff` y scorecard en `dashboard/` (captura en `docs/img/scorecard.png`).
-- **Hecho:** F0-F3, F6. Línea base con asserts: 14/18 (78 %). El juez aprueba llamadas que los asserts suspenden (8 de 12 en `base-c1`). 189 tests en verde.
-- **Siguiente paso:** vueltas por la cola con métricas (latencia y coste por llamada en el scorecard), ElevenLabs (Fase D), lanzar el job `evals` en GitHub con los secretos.
-- **Bloqueos:** ninguno. Repo público: https://github.com/gabrielespelleta94/callbench
+- **Fase actual:** fin de semana 21-22 nov ([docs/plan-mejora.md](../plan-mejora.md)). En `main`: cola (F3), asserts (F4b), métricas (F5), guarda de confirmación en `reservar_cita` (comprueba el sí del paciente en la conversación) y F6: gate `tools/comparar.py`, API `/vueltas` `/diff` y scorecard en `dashboard/` (captura en `docs/img/scorecard.png`).
+- **Hecho:** línea base con asserts: 14/18 (78 %), 4 fallos de confirmación que el juez aprobó. `v1-base` por la cola: 3/6 válidas (la mitad perdida por la cuota de Groq). El juez aprueba llamadas que los asserts suspenden (8 de 12 en `base-c1`).
+- **Siguiente paso:** medir `v1-base-b` y `v2-confirmacion` cuando Groq libere cuota y compararlas con `tools/comparar.py` (salen ya con métricas por llamada para el scorecard); ElevenLabs (Fase D); lanzar el job `evals` en GitHub con los secretos.
+- **Bloqueos:** cuota diaria de Groq (200k tokens en ventana móvil de 24 h). Repo público: https://github.com/gabrielespelleta94/callbench
 
 ## Convenciones
 
