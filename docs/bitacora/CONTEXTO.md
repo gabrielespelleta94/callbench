@@ -64,10 +64,10 @@ llamantes sintéticos (F4) ──> cola de trabajos en Postgres (F3) ───�
 
 <!-- Actualizar al cerrar cada sesión de trabajo (2-4 líneas). -->
 
-- **Fase actual:** fin de semana 21-22 nov ([docs/plan-mejora.md](../plan-mejora.md)). En `main`: cola (F3), asserts (F4b), métricas (F5), guarda de confirmación en `reservar_cita` (comprueba el sí del paciente en la conversación) y F6: gate `tools/comparar.py`, API `/vueltas` `/diff` y scorecard en `dashboard/` (captura en `docs/img/scorecard.png`).
-- **Hecho:** línea base con asserts: 14/18 (78 %), 4 fallos de confirmación que el juez aprobó. `v1-base` por la cola: 3/6 válidas (la mitad perdida por la cuota de Groq). El juez aprueba llamadas que los asserts suspenden (8 de 12 en `base-c1`).
-- **Siguiente paso:** medir `v1-base-b` y `v2-confirmacion` cuando Groq libere cuota y compararlas con `tools/comparar.py` (salen ya con métricas por llamada para el scorecard); ElevenLabs (Fase D); lanzar el job `evals` en GitHub con los secretos.
-- **Bloqueos:** cuota diaria de Groq (200k tokens en ventana móvil de 24 h). Repo público: https://github.com/gabrielespelleta94/callbench
+- **Fase actual:** fin de semana 21-22 nov ([docs/plan-mejora.md](../plan-mejora.md)). En `main`: cola (F3), asserts (F4b), métricas (F5), guarda de confirmación en `reservar_cita` (comprueba el sí del paciente en la conversación), `tools/tabla_wilson.py` y F6: gate `tools/comparar.py`, API `/vueltas` `/diff` y scorecard en `dashboard/` (captura en `docs/img/scorecard.png`).
+- **Hecho:** medido v1 → v2 de la guarda: aprobadas de 11/18 a 21/24 (p = 0,07, no significativo); fallos de confirmación de 4/18 a 0/24 (p = 0,027). La guarda hizo perder una reserva cuando Ana preguntó antes de tener el nombre, y hubo un `reservar_cita` duplicado.
+- **Siguiente paso:** nombre antes del sí en el prompt, assert de reserva duplicada y de salida degenerada; ElevenLabs (Fase D); lanzar el job `evals` en GitHub con los secretos.
+- **Bloqueos:** ninguno ahora; la cuota diaria de Groq (200k tokens en ventana móvil de 24 h) da para unas 30-40 llamadas al día. Repo público: https://github.com/gabrielespelleta94/callbench
 
 ## Convenciones
 
