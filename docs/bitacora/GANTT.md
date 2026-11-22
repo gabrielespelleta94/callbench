@@ -4,7 +4,7 @@
 
 **Objetivo:** Banco de regresión para agentes de voz Pipecat: llamadas sintéticas puntuadas y comparación entre versiones (éxito, latencia p50/p95, coste por llamada).
 
-**Actualizado:** 2026-11-21 · **Avance:** 69 % · **Fase actual:** F4 Tool calling contra la API y llamantes sintéticos
+**Actualizado:** 2026-11-22 · **Avance:** 69 % · **Fase actual:** F4 Tool calling contra la API y llamantes sintéticos
 
 ```mermaid
 gantt
@@ -26,13 +26,13 @@ gantt
     Real :done, F3r, 2026-11-20, 2026-11-21
     section F4
     Tool calling contra la API y llamantes sintéticos (plan) :F4p, 2026-11-01, 2026-11-17
-    Real :active, F4r, 2026-11-01, 2026-11-22
+    Real :active, F4r, 2026-11-01, 2026-11-23
     section F4b
     Asserts deterministas, juez LLM y gate de CI (plan) :F4bp, 2026-11-17, 2026-11-22
-    Real :active, F4br, 2026-11-20, 2026-11-22
+    Real :active, F4br, 2026-11-20, 2026-11-23
     section F5
     Latencia por etapa y coste por llamada (plan) :F5p, 2026-11-20, 2026-11-23
-    Real :active, F5r, 2026-11-20, 2026-11-22
+    Real :active, F5r, 2026-11-20, 2026-11-23
     section F6
     Scorecard en React con diff entre versiones (plan) :F6p, 2026-11-27, 2026-12-05
 ```
@@ -43,13 +43,14 @@ gantt
 | F1 | API de la clínica con FastAPI (en memoria) | ✅ hecho | 2026-10-31 → 2026-10-31 | 2026-10-31 → 2026-10-31 | 1 |  |
 | F2 | Esquema PostgreSQL y migraciones | ✅ hecho | 2026-11-01 → 2026-11-01 | 2026-11-01 → 2026-11-01 | 2 |  |
 | F3 | Cola de trabajos en Postgres (leases, reintentos, chaos test) | ✅ hecho | 2026-11-20 → 2026-11-21 | 2026-11-20 → 2026-11-20 | 1 |  |
-| F4 | Tool calling contra la API y llamantes sintéticos | 🔄 en_curso | 2026-11-01 → 2026-11-16 | 2026-11-01 → 2026-11-21 | 7 | retraso 5 d |
-| F4b | Asserts deterministas, juez LLM y gate de CI | 🔄 en_curso | 2026-11-17 → 2026-11-21 | 2026-11-20 → 2026-11-21 | 1 |  |
-| F5 | Latencia por etapa y coste por llamada | 🔄 en_curso | 2026-11-20 → 2026-11-22 | 2026-11-20 → 2026-11-21 | 1 |  |
+| F4 | Tool calling contra la API y llamantes sintéticos | 🔄 en_curso | 2026-11-01 → 2026-11-16 | 2026-11-01 → 2026-11-22 | 8 | retraso 6 d |
+| F4b | Asserts deterministas, juez LLM y gate de CI | 🔄 en_curso | 2026-11-17 → 2026-11-21 | 2026-11-20 → 2026-11-22 | 1 | retraso 1 d |
+| F5 | Latencia por etapa y coste por llamada | 🔄 en_curso | 2026-11-20 → 2026-11-22 | 2026-11-20 → 2026-11-22 | 1 |  |
 | F6 | Scorecard en React con diff entre versiones | ⏳ pendiente | 2026-11-27 → 2026-12-04 | — | 0 |  |
 
 ## Últimas entradas de la bitácora
 
+- 2026-11-22 · **F4** · Guarda de confirmación medida: los fallos de confirmación bajan de 4/18 a 0/24
 - 2026-11-21 · **F4** · Guarda de confirmación en `reservar_cita`; v1 medida, v2 a medias por cuota de Groq
 - 2026-11-21 · **F4** · Línea base con asserts: 14/18 válidas y el juez aprobó las 4 que fallan
 - 2026-11-20 · **META** · Unidas en main las ramas de cola, asserts, métricas+CI y guía
@@ -57,4 +58,3 @@ gantt
 - 2026-11-20 · **F3** · Resultados en Postgres y cola de trabajos con leases y reintentos
 - 2026-11-20 · **F4b** · Asserts deterministas junto al juez LLM
 - 2026-11-20 · **F5** · Métricas por llamada, coste y CI con pytest
-- 2026-11-20 · **META** · Plan de mejora para el fin de semana y guía del proyecto

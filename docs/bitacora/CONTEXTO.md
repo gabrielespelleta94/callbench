@@ -64,10 +64,10 @@ llamantes sintéticos (F4) ──> cola de trabajos en Postgres (F3) ───�
 
 <!-- Actualizar al cerrar cada sesión de trabajo (2-4 líneas). -->
 
-- **Fase actual:** F4 en curso. Cola (F3), asserts (F4b) y métricas (F5) en `main`. Rama `claude/ana-confirmacion-941b24`: guarda de confirmación en `reservar_cita` (comprueba el sí del paciente en la conversación) y clasificador que atribuye la herramienta inexistente y los 429 de Ana.
-- **Hecho:** línea base con asserts (14/18 válidas, 4 fallos de confirmación que el juez aprobó). `v1-base` por la cola, dos vueltas: 11/18 válidas, 6 fallos de confirmación. `v2-confirmacion-a` a medias (3/4; la guarda paró una vez una frase del paciente inventada por Ana). El `file` inexistente de la línea base era de la persona simulada, no de Ana.
-- **Siguiente paso:** terminar `v2-confirmacion-a` (8 trabajos en cola) y `v2-confirmacion-b` cuando Groq libere cuota, y comparar con `tools/tabla_wilson.py`. Comandos en la última entrada de la bitácora.
-- **Bloqueos:** cuota diaria de Groq (200k tokens en ventana móvil de 24 h) para medir v2. Repo público: https://github.com/gabrielespelleta94/callbench
+- **Fase actual:** F4 en curso. Cola (F3), asserts (F4b) y métricas (F5) en `main`. Rama `claude/ana-confirmacion-941b24`: guarda de confirmación en `reservar_cita` (comprueba el sí del paciente en la conversación), clasificador que atribuye la herramienta inexistente y los 429 de Ana, y `tools/tabla_wilson.py`.
+- **Hecho:** medido v1 → v2 de la guarda: aprobadas de 11/18 a 21/24 (p = 0,07, no significativo); fallos de confirmación de 4/18 a 0/24 (p = 0,027). La guarda hizo perder una reserva cuando Ana preguntó antes de tener el nombre, y hubo un `reservar_cita` duplicado.
+- **Siguiente paso:** nombre antes del sí en el prompt, assert de reserva duplicada y de salida degenerada, y fusionar la rama en `main` (conflictos previsibles en la bitácora, DECISIONES e `informe.py`).
+- **Bloqueos:** ninguno ahora; la cuota diaria de Groq (200k tokens en ventana móvil de 24 h) da para unas 30-40 llamadas al día. Repo público: https://github.com/gabrielespelleta94/callbench
 
 ## Convenciones
 
